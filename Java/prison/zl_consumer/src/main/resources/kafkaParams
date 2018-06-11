@@ -1,0 +1,50 @@
+########################################################
+#########################Kafka##########################
+########################################################
+##b: Consumer 部分参数设定:
+##1: auto.offset.reset 设置为 "earliest" 避免 offset 丢失时跳过未消费的消息. 目前消息存储不统一, 部分使用 zookeeper, 部分使用 kafka topic.
+##2: enable.auto.commit=false  关闭自动提交位移, 在消息被完整处理之后再手动提交位移.
+##3: consumer 的并发受 partition 的限制. 如果消息处理量比较大的情况请提前与运维联系, 增加 partition 数量应对消费端并发. 默认topic partition 为6-8个.
+##partition 也不是越多越好. 首先会增加 file 和 memory, 其次会延长选举时间, 并且会延长 offset 的查询时间.  partition可以扩容但无法缩减.
+##极限情况的数据丢失现象.
+##b: 对数据可靠性较高的场景建议 offset 手动提交. 自动提交当遇到业务系统上线被关闭时, 消息读取并且 offset 已经提交,
+## 但是数据没有存储或者仍没来得及消费时, 消息状态在内存中无法保留, 重启应用会跳过消息 致使消息丢失.
+##spring.kafka.bootstrap-servers=192.168.10.166.9092
+## What to do when there is no initial offset in Kafka or if the current offset does not exist any more on the server.
+#spring.kafka.consumer.auto-offset-reset=latest
+## Comma-delimited list of host:port pairs to use for establishing the initial connection to the Kafka cluster.
+#spring.kafka.consumer.bootstrap-servers=192.168.10.166:9092
+## Id to pass to the server when making requests; used for server-side logging.
+##不要指定此值,指定此值会导致无法自动生成client
+##spring.kafka.consumer.client-id=mysql-client
+## If true the consumer's offset will be periodically committed in the background.
+#spring.kafka.consumer.enable-auto-commit=false
+## Frequency in milliseconds that the consumer offsets are auto-committed to Kafka if 'enable.auto.commit' true.
+#spring.kafka.consumer.auto-commit-interval=100
+## Maximum amount of time in milliseconds the server will block before answering the fetch request
+## if there isn't sufficient data to immediately satisfy the requirement given by "fetch.min.bytes".
+##spring.kafka.consumer.fetch-max-wait=2000
+## Minimum amount of data the server should return for a fetch request in bytes.
+##spring.kafka.consumer.fetch-min-size=1
+## Unique string that identifies the consumer group this consumer belongs to.
+#spring.kafka.consumer.group-id=mysql
+## Expected time in milliseconds between heartbeats to the consumer coordinator.
+#spring.kafka.consumer.heartbeat-interval=2000
+## Deserializer class for keys.
+#spring.kafka.consumer.key-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+## Deserializer class for values.
+#spring.kafka.consumer.value-deserializer=org.apache.kafka.common.serialization.StringDeserializer
+## Maximum number of records returned in a single call to poll().
+##spring.kafka.consumer.max-poll-records=5000
+###auto commit为false时可以配置下列参数来修改提交offset方式
+### Number of records between offset commits when ackMode is "COUNT" or "COUNT_TIME".
+#spring.kafka.listener.ack-count=1000
+### Listener AckMode; see the spring-kafka documentation.
+#spring.kafka.listener.ack-mode=count_time
+### Time in milliseconds between offset commits when ackMode is "TIME" or "COUNT_TIME".
+#spring.kafka.listener.ack-time=20000
+### Number of threads to run in the listener containers.
+#spring.kafka.listener.concurrency=5
+### Timeout in milliseconds to use when polling the consumer.
+#spring.kafka.listener.poll-timeout=5000
+#spring.kafka.template.default-topic=positions

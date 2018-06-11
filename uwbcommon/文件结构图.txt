@@ -1,0 +1,173 @@
+UWB通用定位平台前端代码结构图
+
+--------------------------------------------------------------------------------  2018.05.04   -----------------------------------------------------------------------------
+
+│  .babelrc
+│  .editorconfig
+│  .gitignore
+│  .postcssrc.js
+│  index.html
+│  package-lock.json
+│  package.json
+│  README.md
+│  tree.txt
+│  
+├─build
+│      build.js
+│      check-versions.js
+│      logo.png
+│      utils.js
+│      vue-loader.conf.js
+│      webpack.base.conf.js
+│      webpack.dev.conf.js
+│      webpack.prod.conf.js
+│      
+├─config
+│      dev.env.js
+│      index.js
+│      prod.env.js
+│      
+├─src			----------------------------------主文件夹
+│  │  App.vue
+│  │  main.js
+│  │  
+│  ├─api		 -----------------------------------api文件夹
+│  │      axios.js		 -----------------------------------封装好的axios
+│  │      url.js		 ------------------------------------接口文件
+│  │      
+│  ├─assets		-----------------------------------webpack打包的静态文件
+│  │  ├─audio		 -----------------------------------报警音频文件
+│  │  │      smzy_2016062205.mp3
+│  │  │      
+│  │  ├─css		 	-------------------------css文件
+│  │  │      common.scss	             	-------------------------公共scss文件
+│  │  │      nav.scss                               	--------------------------左侧导航栏css
+│  │  │      
+│  │  ├─font	          	             	 --------------------------font字体文件
+│  │  │      iconfont.css
+│  │  │      iconfont.eot
+│  │  │      iconfont.js
+│  │  │      iconfont.svg
+│  │  │      iconfont.ttf
+│  │  │      iconfont.woff
+│  │  │      
+│  │  ├─img			 ---------------------------图片文件
+│  │  │      111_01.png
+│  │  │      404.jpg
+│  │  │      alarm.png
+│  │  │      background.png
+│  │  │      diban.jpg
+│  │  │      diban78.png
+│  │  │      footer.png
+│  │  │      head-center.png
+│  │  │      head-right.png
+│  │  │      lg-bg.png
+│  │  │      link.png
+│  │  │      linking.png
+│  │  │      login_bg.jpg
+│  │  │      map-bk.png
+│  │  │      nav-bottom.png
+│  │  │      nav-head.png
+│  │  │      nav-left-bk.png
+│  │  │      nav-main.png
+│  │  │      nb.jpg
+│  │  │      opt-nav.png
+│  │  │      rhomboid.png
+│  │  │      rhomboid1.png
+│  │  │      sel_bg.jpg
+│  │  │      unselected-nav.png
+│  │  │      
+│  │  └─js			--------------------公共js文件
+│  │          cookie.js			--------------------封装好的COOKIE
+│  │          formattingTime.js                     --------------------时间格式化    
+│  │          getorgchart.js
+│  │          global.js			--------------------密码加密
+│  │          organizational.js
+│  │          parseFloat.js		 -------------------浮点数精确计算
+│  │          strategy.js
+│  │          
+│  ├─common
+│  │      head.vue			 ------------------头部组件
+│  │      
+│  ├─components			------------------组件文件夹
+│  │  │  add-area.vue		------------------添加区域
+│  │  │  add-edition.vue		-----------------添加版本
+│  │  │  add-org.vue		------------------添加部门
+│  │  │  add-people.vue		------------------添加人员
+│  │  │  add-tactics.vue		------------------添加策略
+│  │  │  alarm-window.vue		-------------------告警弹窗
+│  │  │  area-show.vue		-------------------显示区域
+│  │  │  del-org.vue		-------------------删除部门
+│  │  │  delete.vue			-------------------部门取消时确认弹窗
+│  │  │  draw-grids.vue		-------------------显示标尺
+│  │  │  draw-playback.vue		-------------------轨迹回放画点
+│  │  │  draw-point.vue		------------------实时监控画点
+│  │  │  draw-rectangular.vue	----------------画区域框
+│  │  │  flickering.vue		----------------报警时位置点闪烁的组件
+│  │  │  histogram.vue		----------------柱状图
+│  │  │  image-upload.vue		----------------图片上传
+│  │  │  loading.vue		----------------上传时的动画
+│  │  │  map-modify.vue		----------------修改地图信息
+│  │  │  modify-fence.vue		----------------修改区域信息
+│  │  │  modify-org.vue		-----------------修改部门信息
+│  │  │  modify-person.vue		-----------------修改人员信息
+│  │  │  modify-tactics.vue		-----------------修改策略
+│  │  │  modify-versions.vue		-----------------修改版本信息
+│  │  │  personnel-selection.vue   	-----------------实时监控和轨迹回放左侧结构显示组件
+│  │  │  pie.vue			-------------环形图
+│  │  │  rose.vue			-------------玫瑰图
+│  │  │  selection.vue		-------------实时监控和轨迹回放显示名字等勾选组件
+│  │  │  time-line.vue		-------------回放时间轴
+│  │  │  v-audio.vue		--------------报警音频组件
+│  │  │  	
+│  │  ├─orgChart			--------------部门组织结构图
+│  │  │      index.js
+│  │  │      org-chart.vue
+│  │  │      org.css
+│  │  │      
+│  │  └─tree			 -------------实时监控和轨迹回放左侧结构组件
+│  │          index.js			 
+│  │          tree.css
+│  │          tree.vue
+│  │          
+│  ├─pages			--------------页面文件夹
+│  │  │  404.vue			--------------404页面
+│  │  │  alarm.vue			--------------告警管理
+│  │  │  attendance.vue		--------------实时考勤
+│  │  │  configuration.vue		--------------系统管理
+│  │  │  index.vue			--------------主界面
+│  │  │  login.vue			--------------登录页面
+│  │  │  playback.vue		--------------轨迹回放
+│  │  │  real-time.vue		--------------实时轨迹
+│  │  │  
+│  │  └─config-children		--------------系统管理子路由文件夹
+│  │          area.vue			--------------区域管理
+│  │          edition.vue		--------------版本管理
+│  │          equipment.vue
+│  │          map-arrangement.vue	--------------地图管理
+│  │          organizational.vue		--------------组织管理
+│  │          personnel-management.vue	--------------人员管理		 
+│  │          tactics.vue		--------------策略管理
+│  │          twice.vue
+│  │          upgrade.vue		--------------设备升级
+│  │          
+│  ├─router			--------------路由
+│  │      index.js
+│  │      
+│  └─store			--------------vuex
+│      │  index.js
+│      │  
+│      └─module
+│              configuration-nav.js		--------------系统管理左侧栏模块
+│              permission.js		--------------权限管理模块
+│              playback.js		--------------回放模块
+│              
+└─static
+    │  .gitkeep
+    │  
+    ├─css
+    │      rese.css
+    │      
+    └─js
+            three.min.js
+            

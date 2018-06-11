@@ -1,0 +1,330 @@
+/**
+ * Eric Meyer's Reset CSS v2.0 (http://meyerweb.com/eric/tools/css/reset/)
+ * http://cssreset.com
+ */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video, input {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    /* font-weight: normal; */
+    vertical-align: baseline;
+    box-sizing: border-box;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, menu, nav, section {
+    display: block;
+}
+
+body {
+    line-height: 1;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+/* custom */
+a {
+    color: #7e8c8d;
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-backface-visibility: hidden;
+}
+
+li {
+    list-style: none;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track-piece {
+    background-color: rgba(0, 0, 0, 0.2);
+    -webkit-border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:vertical {
+    height: 5px;
+    background-color: rgba(125, 125, 125, 0.7);
+    -webkit-border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+    width: 5px;
+    background-color: rgba(125, 125, 125, 0.7);
+    -webkit-border-radius: 6px;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    -webkit-text-size-adjust: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+* {
+  outline: none !important;
+  /* font-family: "PingFang SC Light"; */
+  font-family: 'Microsoft YaHei',Arial, sans-serif  
+}
+.must::before{
+    content: '*';
+    color: #f00;
+}
+.el-badge__content{
+    height: 20px !important;
+}
+.el-checkbox__input{
+    vertical-align: baseline !important;
+}
+.el-input__inner {
+    height: 26px !important;
+}
+.el-input__icon{
+    line-height: 26px !important;
+}
+.el-input__inner{
+    background-color: rgba(253, 253, 253, 0) !important;
+  }
+.el-table{
+    background-color: rgba(253, 253, 253, 0) !important;
+}
+.el-table tr,
+.el-table th{
+    background-color: rgba(0, 0, 0, 0) !important;
+}
+.has-gutter{
+    background-color: rgba(0, 102, 204, 0.5) !important;
+}
+.el-table__row--striped{
+    background-color: rgba(0, 153, 255, 0.15) !important;
+}
+.el-table td, .el-table th.is-leaf{
+    border-bottom: 1px solid rgba(0, 144, 236, 0.6) !important;
+}
+.el-table thead{
+    color: #59b3ff !important;
+}
+.el-checkbox__label{
+    width: 26px !important;
+}
+.shuai{
+    float: left;
+}
+.el-table--striped .el-table__body tr.el-table__row--striped td{
+    background: rgba(0,132,255,.5) !important;
+}
+.el-table{
+    color: #59b3ff !important;
+}
+.el-tree-node:focus>.el-tree-node__content, .el-tree-node__content:hover {
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-tree-node__expand-icon{
+  font-size: 20px !important;
+}
+.pagination{
+text-align: center;
+margin-top: 10px;
+}
+.el-tag--small{
+    height: 20px !important;
+    padding: 0 8px;
+    line-height: 18px !important;
+}
+.el-cascader__label{
+    color: #fff !important;
+}
+.el-input__inner{
+    color: #fff !important;
+}
+.el-input-group__append{
+    padding: 0 10px !important;
+    background: rgba(0, 0, 0, 0) !important;
+    color: #fff !important;
+    border: 1px solid #2088d7 !important;
+}
+.el-table--enable-row-hover .el-table__body tr:hover>td{
+    color: #fff !important;
+    background: rgba(0, 153, 255, 0.15) !important;
+}
+.el-table td{
+    height: 45px !important;
+    padding: 0 !important;
+}
+/* .el-date-editor.el-input{
+    width: 220px !important;
+} */
+.popper__arrow{
+    left: 50px !important; 
+}
+.el-select__tags{
+   max-width: 120px !important;
+}
+.el-cascader-menu{
+    background: rgba(0, 144, 236, 0.6) !important;
+    color: #fff !important;
+    /* border: none !important;/ */
+}
+.el-cascader-menus{
+    border: none !important;
+    background: rgba(255, 255, 255, 0) !important;
+}
+.el-cascader-menu__item{
+    color: #fff !important;
+}
+.el-cascader-menu__item:hover{
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-popper[x-placement^=bottom] .popper__arrow{
+    border-bottom-color: rgba(0, 144, 236, 0.6) !important;
+}
+.el-popper[x-placement^=bottom] .popper__arrow::after{
+    border-bottom-color: rgba(0, 144, 236, 0.6) !important;
+}
+.el-select-dropdown{
+    background: rgba(0, 144, 236, 0.6) !important;
+    border: none !important;
+}
+.el-select-dropdown__item.hover, .el-select-dropdown__item:hover{
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-select-dropdown__item{
+    color: #fff !important;
+}
+.el-time-panel{
+    background: rgba(0, 144, 236, 0.6) !important;
+    border: none !important;
+}
+.el-time-spinner__item{
+    color: #fff !important;
+}
+.el-time-spinner__item:hover:not(.disabled):not(.active){
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-input__inner{
+    border: 1px solid #2088d7 !important;
+}
+.el-cascader-menu__item:focus:not(:active), .el-cascader-menu__item:hover{
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-checkbox+.el-checkbox{
+    margin-left: 10px;
+}
+.el-form-item__label{
+    color: #fff !important;
+}
+.el-checkbox{
+    color: #fff !important;
+}
+.el-textarea__inner{
+    background: rgba(0, 144, 236, 0) !important;
+    border: 1px solid #2088d7 !important;
+    color: #fff !important;
+}
+.el-radio__label{
+    color: #fff;
+}
+.el-upload-list__item-name{
+  color: #fff !important;
+}
+.el-upload-list__item:hover{
+    background: rgba(0, 144, 236, 0) !important;
+}
+.el-select-dropdown.is-multiple .el-select-dropdown__item.selected{
+    background: rgba(255, 255, 255, 0) !important;
+}
+.icon-bianji,
+.icon-lajitong{
+    cursor: pointer;
+}
+.el-pagination__total{
+    color: #fff !important;
+}
+.el-checkbox__input.is-checked+.el-checkbox__label{
+    color: #fff !important;
+}
+.el-checkbox__label{
+    color: #59b3ff !important;
+}
+.el-radio__input.is-checked+.el-radio__label{
+    color: #fff !important;
+}
+.el-radio__label{
+    color: #59b3ff;
+}
+.el-dropdown{
+    color: #59b3ff !important;
+}
+.el-dropdown-menu{
+    border: none !important;
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-dropdown-menu__item{
+    color: #fff !important;
+}
+.el-dropdown-menu__item:not(.is-disabled):hover{
+    background: rgba(0, 144, 236, 0.6) !important;
+}
+.el-picker-panel{
+    background: rgba(0, 144, 236, 0.6) !important;
+    color: #fff !important;
+    border: none !important;
+}
+.el-picker-panel__icon-btn,
+.el-date-picker__header-label{
+    color: #fff !important;
+}
+.el-date-table th{
+    color: #fff !important;
+}
+.el-date-picker__time-header{
+    border: none !important;
+}
+.el-picker-panel__footer{
+    background: rgba(0, 144, 236, 0) !important;
+}
+.el-date-table td.today span {
+    color: #fff !important;
+}
+.add-dle button{
+    cursor: pointer;
+}
+.but button{
+    cursor: pointer;
+}
+.el-time-panel__btn{
+    color: #fff !important;
+}
+.el-button--text{
+    color: #fff !important;
+}

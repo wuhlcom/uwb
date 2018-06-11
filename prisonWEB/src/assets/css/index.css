@@ -1,0 +1,9 @@
+.vertical:before{
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 13px;
+  background: #409eff;
+  margin-right: 6px;
+  vertical-align: top;
+}

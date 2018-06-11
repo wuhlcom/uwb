@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.dbs.daos.PersonDao">
+
+    <resultMap id="persons" type="com.zhilutec.dbs.entities.Person">
+        <id property="id" column="id"/>
+        <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+        <result property="personCode" column="person_code" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--根据部门查询人员-->
+    <select id="getPersonsByDepartment" parameterType="String" resultMap="persons">
+        SELECT person_code,person_name,department_code
+        FROM uwb_persons
+        WHERE 1=1 and isdel=1
+        <if test="_parameter !=null and _parameter !=''">and department_code =#{_parameter}</if>
+    </select>
+
+
+    <!--将person对象转成departmentc对象-->
+    <resultMap id="person2dpt" type="com.zhilutec.dbs.pojos.Person2DptRS">
+        <id property="id" column="id"/>
+        <result property="departmentName" column="person_name" jdbcType="VARCHAR"/>
+        <result property="departmentCode" column="person_code" jdbcType="VARCHAR"/>
+        <result property="tagId" column="tag_id" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+    </resultMap>
+
+    <!--根据部门查询人员,人员属性名改成部门属性名-->
+    <select id="getPersonsByDpt" parameterType="String" resultMap="person2dpt">
+        SELECT person_code,person_name,department_code,tag_id
+        FROM uwb_persons
+        WHERE 1=1 and isdel=1
+        <if test="_parameter !=null and _parameter !=''">and department_code =#{_parameter}</if>
+    </select>
+
+    <resultMap id="groupPersons" type="com.zhilutec.dbs.pojos.DepartmentRs">
+        <id property="departmentCode" column="department_code" jdbcType="VARCHAR"/>
+        <result property="departmentName" column="department_name" jdbcType="VARCHAR"/>
+        <collection property="persons" ofType="com.zhilutec.dbs.pojos.PersonRs">
+            <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+            <result property="personCode" column="person_code" jdbcType="VARCHAR"/>
+            <result property="tagId" column="tag_id" jdbcType="BIGINT"/>
+        </collection>
+    </resultMap>
+
+
+    <!--根据部门分组获取部门人员-->
+    <select id="groupPersonsByDepartment" parameterType="String" resultMap="groupPersons">
+        select p.person_name,p.person_code, d.department_name,d.department_code,p.tag_id
+        from uwb_persons p INNER JOIN uwb_departments d
+        on p.department_code = d.department_code and p.isdel=1 and d.isdel=1
+        group by p.department_code,p.person_code
+        <if test="_parameter !=null and _parameter !=''">HAVING d.department_code=#{_parameter}</if>
+        order by d.department_code
+    </select>
+
+    <resultMap id="personDepartments" type="com.zhilutec.dbs.pojos.PersonListRs">
+        <id property="id" column="id"/>
+        <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+        <result property="personCode" column="person_code" jdbcType="VARCHAR"/>
+        <result property="departmentName" column="department_name" jdbcType="VARCHAR"/>
+        <result property="departmentCode" column="department_code" jdbcType="VARCHAR"/>
+        <result property="idcard" column="idcard" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="INTEGER"/>
+        <result property="birth" column="birth" jdbcType="DATE"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="levelName" column="level_name" jdbcType="INTEGER"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+        <result property="levelCode" column="level_code" jdbcType="INTEGER"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+        <result property="positionName" column="position_name" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+        <result property="positionCode" column="position_Code" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+        <result property="telephone" column="telephone" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="portrait" column="portrait" jdbcType="VARCHAR"/>
+        <result property="tagId" column="tag_id" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+    </resultMap>
+
+    <!--人员清单，包含部门，级别，职务-->
+    <select id="getPersonList" parameterType="com.zhilutec.dbs.entities.Person" resultMap="personDepartments">
+        select
+        p.id,p.person_name,p.person_code,p.idcard,p.sex,p.birth,p.remark,p.telephone,p.email,p.portrait,p.tag_id,d.department_name,d.department_code,r.level_name,r.level_code,po.position_code,po.position_name
+        from uwb_persons as p
+        LEFT JOIN uwb_departments as d on d.department_code=p.department_code
+        LEFT JOIN uwb_levels as r on r.level_code=p.level_code
+        LEFT JOIN uwb_positions as po on po.position_code =p.position_code
+        WHERE p.isdel=1
+        <if test=" id!=null ">
+            AND p.id =#{id, jdbcType=INTEGER}
+        </if>
+        <if test="personName!= null and personName!= '' ">
+            <!--AND F.NAME LIKE '%${name}%'-->
+            AND p.person_name LIKE CONCAT(CONCAT('%', #{personName, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="personCode!= null and personCode!= '' ">
+            AND p.person_code= #{personCode, jdbcType=VARCHAR}
+        </if>
+        <if test="idcard!= null and idcard!= '' ">
+            AND p.idcard LIKE CONCAT(CONCAT('%', #{idcard, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="sex!= null ">
+            AND p.sex = #{sex, jdbcType=INTEGER}
+        </if>
+
+        <if test="remark!= null and remark!= '' ">
+            AND p.remark = #{remark, jdbcType=VARCHAR}
+        </if>
+
+        <if test="telephone!= null and telephone!= '' ">
+            AND p.position = #{telephone, jdbcType=VARCHAR}
+        </if>
+
+        <if test="email!= null and email!= '' ">
+            AND p.email = #{email, jdbcType=VARCHAR}
+        </if>
+
+        <if test="departmentCode!= null and departmentCode!= '' ">
+            AND d.department_code = #{departmentCode, jdbcType=VARCHAR}
+        </if>
+
+        <if test="tagId!= null and tagId!= '' ">
+            AND p.tag_id = #{tagId, jdbcType=BIGINT}
+        </if>
+
+        <if test="levelName!= null and levelName!= '' ">
+            AND r.level_name = #{levelName, jdbcType=VARCHAR}
+        </if>
+
+        <if test="levelCode!= null and levelCode!= '' ">
+            AND p.level_code = #{levelCode, jdbcType=VARCHAR}
+        </if>
+
+        <if test="positionCode!= null and positionCode!= '' ">
+            AND p.position_code = #{positionCode, jdbcType=VARCHAR}
+        </if>
+
+        <if test="positionName!= null and positionName!= '' ">
+            AND p.position_name = #{positionName, jdbcType=VARCHAR}
+        </if>
+        order by
+        <choose>
+            <when test="sort!=null and sort !=''">
+                ${sort}
+                <if test="order!=null and order !=''">
+                    ${order}
+                </if>
+            </when>
+            <otherwise>
+                p.created_at desc,p.person_name asc
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <!--批量更新部门-->
+    <update id="batchUpdateDepartment" parameterType="com.zhilutec.dbs.pojos.PersonDepartmentParam">
+        UPDATE uwb_persons
+        SET department_code =#{departmentCode,jdbcType=VARCHAR}
+        WHERE isdel=1 and person_code IN
+        <foreach collection="persons" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <!--人员清单,简单查询所有人-->
+    <resultMap id="personSimple" type="com.zhilutec.dbs.pojos.PersonListRs">
+        <id property="id" column="id"/>
+        <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+        <result property="personCode" column="person_code" jdbcType="VARCHAR"/>
+        <result property="departmentCode" column="department_code" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+        <result property="tagId" column="tag_id" jdbcType="VARCHAR"
+                typeHandler="com.zhilutec.configs.mybatis.EmptyStringIfNull"/>
+    </resultMap>
+    <select id="getPersons" resultMap="personSimple">
+        select id,person_name,person_code,tag_id,department_code,remark
+        from uwb_persons
+        WHERE isdel=1
+        order by created_at desc,person_name asc
+    </select>
+
+
+</mapper>

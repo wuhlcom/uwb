@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.db.daos.TagWarningDao">
+
+	<select id="queryAreaWarnings" resultType="java.util.HashMap"
+		parameterType="hashmap">
+		select level,count(level) as amount from pr_tag_warnings
+		where tag_id
+		in (
+		select tag_id from pr_prisoners
+		where 1=1 and op=1
+		<if test="areaCode!=null and areaCode!=''">
+			area_code=#{areaCode}
+		</if>
+		)
+		<if
+			test="startTime != null and startTime !='' and endTime != null and endTime !=''">
+			and timestamp BETWEEN #{startTime,jdbcType=BIGINT}
+			and	#{endTime,jdbcType=BIGINT}
+		</if>
+		group by level
+	</select>
+
+	<select id="areaWarningsList" resultType="com.zhilutec.db.results.WarningStatusResult"
+		parameterType="map">
+		select
+		w.pos_code,w.level,w.warning_code,w.tag_id,w.timestamp,w.position,w.state,p.name,p.code
+		FROM pr_tag_warnings as w,pr_prisoners as p
+		where w.tag_id = p.tag_id
+		<if test="areaCode!=null and areaCode!=''">
+			p.area_code=#{areaCode}
+		</if>
+		<if
+			test="startTime != null and startTime !='' and endTime != null and endTime !=''">
+			and w.timestamp BETWEEN #{startTime,jdbcType=BIGINT}
+			and	#{endTime,jdbcType=BIGINT}
+		</if>
+	</select>
+
+</mapper>

@@ -1,0 +1,125 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>My WebSocket</title>
+<script src="js/vue.js"></script>
+<style>
+body {
+	text-align: center
+}
+
+#ws {
+	margin: 0 auto;
+	border: 1px solid #000;
+	width: 100%;
+	height: 100%
+}
+
+#n {
+	margin: 10px auto;
+	width: 920px;
+	border: 1px solid #CCC;
+	font-size: 12px;
+	line-height: 30px;
+}
+
+#n a {
+	padding: 0 4px;
+	color: #333
+}
+</style>
+
+</head>
+<body>
+	Welcome To My WebSocket.
+	<br />
+	<br />
+	<div id="ws">
+		<div>
+			<input id="text" style="width: 96%" type="text" />
+		</div>
+		<div>
+			<button onclick="closeWS()" :disabled="!opened">Close</button>
+			<button onclick="openWS()" :disabled="opened">Open</button>
+			<button onclick="sendMsg()">Send</button>
+		</div>
+		<div v-html="msg"></div>
+	</div>
+</body>
+
+<script type="text/javascript">
+	var websocket = null;
+
+	var wsVue = new Vue({
+		el : '#ws',
+		data : {
+			msg : "welcome to my websocket...<br/>",
+			opened : false
+		},
+		mounted : function() {
+			initWs();
+		}
+	});
+
+	function initWs() {
+		//check if your browser supports WebSocket  
+		if ('WebSocket' in window) {
+			websocket = new WebSocket("ws://192.168.10.123:10003/alarm/wsmsg");
+		} else {
+			alert('Sorry, websocket not supported by your browser.')
+		}
+
+		//Error callback  
+		websocket.onerror = function() {
+			setMessageContent("error!");
+			wsVue.opened = false;
+		};
+
+		//socket opened callback  
+		websocket.onopen = function(event) {
+			setMessageContent("websocket opened");
+			wsVue.opened = true;
+		}
+
+		//message received callback  
+		websocket.onmessage = function(event) {
+			setMessageContent(event.data);
+		}
+
+		//socket closed callback  
+		websocket.onclose = function() {
+			setMessageContent("websocket closed");
+			wsVue.opened = false;
+		}
+
+		//when browser window closed, close the socket, to prevent server exception  
+		window.onbeforeunload = function() {
+			websocket.close();
+		}
+	}
+
+	//update message to vue and then in div  
+	function setMessageContent(content) {
+		wsVue.msg += content + '<br/>';
+	}
+
+	//click to close the websocket  
+	function closeWS() {
+		websocket.close();
+		wsVue.opened = false;
+	}
+
+	//click to open the websocket  
+	function openWS() {
+		initWs();
+	}
+
+	//click to send message  
+	function sendMsg() {
+		var message = document.getElementById('text').value;
+		websocket.send(message);
+	}
+</script>
+</body>
+</html>

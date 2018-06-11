@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.db.daos.PrisonerDao">
+
+	<select id="queryByTagId" resultType="java.util.HashMap"
+		parameterType="java.lang.Long">
+		select p.tag_id as tagId,p.name,p.code,p.area_code as areaCode,a.name as areaName
+		from pr_areas as a,pr_prisoners as p
+		where p.tag_id = ${_parameter} and a.area_unique_code = p.area_code
+	</select>
+</mapper>

@@ -1,0 +1,32 @@
+#tree{
+  position: relative;
+  height: 100%;
+  width: 100%;
+  color: #fff;
+  user-select: none;
+  color: #59b3ff;
+}
+.department{
+  padding-left: 20px;
+}
+.hide{
+  display: none;
+}
+.tree-title{
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  margin-left: 10px;
+  /* text-align: center; */
+}
+.prson-name{
+  width: 100px;
+  margin-left: 10px;
+  height: 30px;
+  line-height: 30px;
+  text-align: left;
+  font-size: 13px;
+}
+.iconfont{
+  margin-right: 10px;
+}

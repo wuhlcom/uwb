@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.db.daos.TagStatusDao">
+
+	<select id="queryStatus" resultType="com.zhilutec.db.results.StatusResult" parameterType="com.zhilutec.db.params.StatusParam">
+		select p.code,p.name,p.tag_id,t.status,t.timestamp  
+		from
+		(
+		select * from  pr_tag_status where 1=1 
+		<if test="tagId != null and tagId != ''">
+		 and  tag_id=#{tagId,jdbcType=INTEGER}		
+		</if>
+		ORDER BY id desc
+		<if test="amount != null and amount != ''">
+			limit #{amount,jdbcType=INTEGER}
+		</if>
+		) as t inner join
+		(
+		select * from pr_prisoners where 1=1 		
+		) as p on c.tag_id = p.tag_id
+	</select>
+
+</mapper>

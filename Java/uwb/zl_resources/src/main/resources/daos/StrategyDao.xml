@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.dbs.daos.StrategyDao">
+
+    <resultMap id="strategyList" type="com.zhilutec.dbs.entities.Strategy">
+        <id property="id" column="id"/>
+        <result property="strategyName" column="strategy_name" jdbcType="VARCHAR"/>
+        <result property="strategyCode" column="strategy_code" jdbcType="VARCHAR"/>
+        <result property="strategyUserId" column="strategy_user_id" jdbcType="BIGINT"/>
+        <result property="fenceName" column="fence_name" jdbcType="VARCHAR"/>
+        <result property="fenceCode" column="fence_code" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="userType" column="user_type" jdbcType="INTEGER"/>
+        <result property="available" column="available" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="TIMESTAMP"/>
+        <result property="finishTime" column="finish_time" jdbcType="TIMESTAMP"/>
+        <result property="level" column="level" jdbcType="INTEGER"/>
+        <result property="timeType" column="time_type" jdbcType="INTEGER"/>
+        <result property="timeValue" column="time_value" jdbcType="VARCHAR"/>
+        <result property="forbidden" column="forbidden" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="getStrategies" parameterType="com.zhilutec.dbs.entities.Strategy" resultMap="strategyList">
+        select
+        s.id,s.strategy_name,s.strategy_code,s.strategy_user_id,s.fence_code,s.remark,s.user_type,s.available,s.start_time,s.finish_time,s.level,s.time_type,s.time_value,s.forbidden,f.fence_name
+        from uwb_strategies s
+        INNER JOIN uwb_fences f
+        on s.isdel=1 and s.fence_code=f.fence_code
+        <if test=" strategyName!=null and strategyName != '' ">
+            AND strategy_name LIKE CONCAT(CONCAT('%', #{strategyName, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test=" strategyCode!=null and strategyCode != '' ">
+            AND strategy_code =#{strategyCode, jdbcType=VARCHAR}
+        </if>
+        <if test=" strategyUserId!=null and strategyUserId != '' ">
+            AND strategy_user_id =#{strategyUserId, jdbcType=VARCHAR}
+        </if>
+        <if test=" fenceCode!=null and fenceCode != '' ">
+            AND fence_code =#{fenceCode, jdbcType=VARCHAR}
+        </if>
+        <if test="remark!= null and remark!= '' ">
+            AND remark LIKE CONCAT(CONCAT('%', #{remark, jdbcType=VARCHAR}),'%')
+        </if>
+
+        <if test="userType!= null ">
+            AND user_type =#{type, jdbcType=INTEGER}
+        </if>
+
+        <if test="available!=null ">
+            AND available =#{available, jdbcType=INTEGER}
+        </if>
+
+        <if test="level!=null ">
+            AND level =#{level, jdbcType=INTEGER}
+        </if>
+
+        <if test="startTime!= null ">
+            AND start_time =#{startTime, jdbcType=TIME}
+        </if>
+
+        <if test="finishTime!= null ">
+            AND finish_time =#{finishTime, jdbcType=TIME}
+        </if>
+
+        <if test="timeType!= null and timeType!= '' ">
+           AND time_type =#{timeType, jdbcType=INTEGER}
+        </if>
+
+        <if test="timeValue!= null and timeValue!= '' ">
+            AND time_value =#{timeType, jdbcType=VARCHAR}
+        </if>
+        <if test="forbidden!= null">
+            AND forbidden =#{forbidden, jdbcType=INTEGER}
+        </if>
+        <if test="beginTime != null and endTime != null ">
+            and created_at BETWEEN #{beginTime,jdbcType=BIGINT}
+            and #{endTime,jdbcType=BIGINT}
+        </if>
+        order by
+        <choose>
+            <when test="sort!=null and sort !=''">
+                ${sort}
+                <if test="order!=null and order !=''">
+                    ${order}
+                </if>
+            </when>
+            <otherwise>
+                s.created_at desc
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

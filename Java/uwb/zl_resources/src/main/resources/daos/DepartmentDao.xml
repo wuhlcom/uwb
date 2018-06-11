@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.dbs.daos.DepartmentDao">
+    <resultMap id="allDeparments" type="com.zhilutec.dbs.entities.Department">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="departmentCode" column="department_code" jdbcType="VARCHAR"/>
+        <result property="departmentName" column="department_name" jdbcType="VARCHAR"/>
+        <result property="parentCode" column="parent_code" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getDepartments" resultMap="allDeparments">
+        SELECT id,department_name,department_code,parent_code,remark
+        FROM uwb_departments WHERE isdel=1
+    </select>
+
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.db.daos.CoordinateDao">
+	<resultMap type="CoordinateEntity" id="PointResult">
+		<id property="pos_y" column="posY" />
+		<result property="pos_z" column="posZ" />
+		<result property="pos_x" column="posX" />
+		<result property="pos_code" column="posCode" />
+		<result property="code" column="code" />
+		<result property="name" column="name" />
+		<result property="tag_id" column="tagId" />
+		<result property="type" column="type" />
+	</resultMap>
+
+	<select id="queryPoints" resultType="com.zhilutec.db.results.PointResult"
+		parameterType="hashmap">
+		select
+		p.name,p.code,c.pos_x,c.pos_y,c.pos_z,c.type,c.tag_id,c.pos_code
+		from
+		(select *
+		from pr_coordinates
+		where id in(
+		select max(id)
+		from
+		pr_coordinates
+		where tag_id in
+		<foreach item="item" index="index" collection="tagIds" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+		group by tag_id)
+		<if test="type != null and type!=''">
+			and type=#{type}
+		</if>
+		) as c INNER JOIN
+		pr_prisoners as p
+		where c.tag_id = p.tag_id
+	</select>
+
+</mapper>
+

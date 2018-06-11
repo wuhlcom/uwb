@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>upload test</title>
+    <meta name="keywords" content="keyword1,keyword2,keyword3"></meta>
+    <meta name="description" content="this is my page"></meta>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <!--<link rel="stylesheet" type="text/css" href="./styles.css">-->
+</head>
+
+<body>
+<form enctype="multipart/form-data" method="post" action="/fdfs/upload">
+    图片<input type="file" name="file"/><br />
+    <fieldset>
+        <legend>大小</legend>
+        长度： <input type="text" name="length" />
+        宽度:  <input type="text" name="width" />
+    </fieldset>
+    <input type="submit" value="上传"/>
+</form>
+</body>
+</html>

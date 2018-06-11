@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "spring.datasource.druid.WebStatFilter.exclusions",
+  "type": "java.lang.String",
+  "description": "A description for 'spring.datasource.druid.WebStatFilter.exclusions'"
+}]}

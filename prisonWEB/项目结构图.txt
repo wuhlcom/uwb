@@ -1,0 +1,152 @@
+卷 word 的文件夹 PATH 列表
+卷序列号为 000C-10AA
+D:.
+│  .babelrc
+│  .editorconfig
+│  .gitignore
+│  .postcssrc.js
+│  index.html
+│  package-lock.json
+│  package.json
+│  README.md
+│  tree.txt
+│  
+├─build
+│      build.js
+│      check-versions.js
+│      logo.png
+│      utils.js
+│      vue-loader.conf.js
+│      webpack.base.conf.js
+│      webpack.dev.conf.js
+│      webpack.prod.conf.js
+│      webpack.test.conf.js
+│      
+├─config
+│      dev.env.js
+│      index.js
+│      prod.env.js
+│      
+│                  
+├─src
+│  │  App.vue
+│  │  main.js
+│  │  
+│  ├─api			
+│  │      api.js  —————————————————— 接口管理
+│  │      
+│  ├─assets      —————————————————— 公共资源目录
+│  │  ├─css
+│  │  │      index.css  —————————————— 样式				
+│  │  │      
+│  │  ├─font	———————————————— 字体图标
+│  │  │      iconfont.css
+│  │  │      iconfont.eot
+│  │  │      iconfont.js
+│  │  │      iconfont.svg
+│  │  │      iconfont.ttf
+│  │  │      iconfont.woff
+│  │  │      PINGFANG LIGHT_0.ttf
+│  │  │      
+│  │  └─js	 ———————————————————— 公用方法
+│  │          cookie.js
+│  │          formattingTime.js
+│  │          global.js
+│  │          parseFloat.js
+│  │          
+│  ├─axios	———————————————————— axios封装
+│  │      index.js
+│  │      
+│  ├─components	———————————————— 公共组件
+│  │  ├─absenteeism
+│  │  │      absenteeism.vue	 ——————————— 监仓页缺勤人员统计组件
+│  │  │      
+│  │  ├─alert
+│  │  │      alert.vue —————————————— 退出弹窗组件
+│  │  │      
+│  │  ├─crewalert
+│  │  │      crewalert.vue  ———————————— 监仓页电子点名组件
+│  │  │      
+│  │  ├─handlingstatus
+│  │  │      handlingstatus.vue  —————————— 列表内报警处理组件
+│  │  │      
+│  │  ├─header
+│  │  │      header.vue —————————————— 头部组件
+│  │  │      logo.png
+│  │  │      quit.png
+│  │  │      
+│  │  ├─personalalarmpopover
+│  │  │      personalalarmpopover.vue ———————— 个人页个人报警列表弹窗组件
+│  │  │      
+│  │  ├─pie
+│  │  │      pie.vue ———————————————— 监仓页报警统计环形图组件
+│  │  │      
+│  │  ├─position
+│  │  │      position.vue ————————————— 犯人位置显示组件
+│  │  │      
+│  │  ├─sequencinglist
+│  │  │      sequencinglist.vue —————————— 列表表头组件
+│  │  │      
+│  │  ├─statistics
+│  │  │      statistics.vue ———————————— 监仓页人数统计组件
+│  │  │      
+│  │  ├─status
+│  │  │      status.vue —————————————— 监仓页人员状态显示组件
+│  │  │      
+│  │  ├─time
+│  │  │      time.vue ———————————————— 时间组件
+│  │  │      
+│  │  └─warningalert
+│  │          warningalert.vue ———————————— 报警弹窗组件
+│  │          
+│  ├─pages  —————————————————————— 项目主页面目录
+│  │  ├─AbsenceList	
+│  │  │      absencelist.vue —————————————— 监仓页缺勤人员列表
+│  │  │      nodatum.png
+│  │  │      
+│  │  ├─Cell
+│  │  │      cell.png
+│  │  │      cell.vue —————————————————— 监仓页人员状态显示页
+│  │  │      cell1.png
+│  │  │      
+│  │  ├─Floors
+│  │  │      floors.vue ———————————————— 监仓主页
+│  │  │      
+│  │  ├─Login
+│  │  │      footer.png
+│  │  │      left.png
+│  │  │      login.vue —————————————————— 登录页面
+│  │  │      no.png
+│  │  │      ok.png
+│  │  │      
+│  │  ├─Panorama
+│  │  │      jiancang5.png
+│  │  │      panorama.vue ———————————————— 全景图页面
+│  │  │      
+│  │  ├─PrisonerInfo
+│  │  │      cell.png
+│  │  │      cell1.png
+│  │  │      head.png
+│  │  │      nowifi.png
+│  │  │      prisonerinfo.vue —————————————— 个人信息页
+│  │  │      videos.png
+│  │  │      
+│  │  ├─Warning
+│  │  │      nodatum.png
+│  │  │      warning.vue ———————————————— 监仓页报警列表
+│  │  │      
+│  │  └─WarningList
+│  │          warninglist.vue —————————————— 报警列表页
+│  │          
+│  ├─router
+│  │      index.js ———————————————————— 路由配置文件
+│  │      
+│  └─store
+│          index.js ———————————————————— vuex文件
+│          
+└─static
+    │  .gitkeep
+    │  
+    └─css
+            rese.css ———————————————————— 公共CSS文件
+            

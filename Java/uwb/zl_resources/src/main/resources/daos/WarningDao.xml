@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.dbs.daos.WarningDao">
+
+    <resultMap id="baseReslutMap" type="com.zhilutec.dbs.entities.Warning">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="msg" column="msg" jdbcType="VARCHAR"/>
+        <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+        <result property="personCode" column="person_code" jdbcType="VARCHAR"/>
+        <result property="departmentName" column="department_name" jdbcType="VARCHAR"/>
+        <result property="level" column="level" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="fenceName" column="fence_name" jdbcType="VARCHAR"/>
+        <result property="timestamp" column="timestamp" jdbcType="BIGINT"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询报警列表-->
+    <select id="getWarnings" parameterType="com.zhilutec.dbs.entities.Warning" resultMap="baseReslutMap">
+        SELECT id,person_name,person_code,department_name,timestamp,level,type,fence_name,msg,status
+        FROM uwb_warnings WHERE 1=1 and op=1
+        <if test="msg != null and msg !=''">
+            AND msg LIKE CONCAT(CONCAT('%', #{msg, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="personName != null and personName !=''">
+            AND person_name LIKE CONCAT(CONCAT('%', #{personName, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="personCode != null and personCode !=''">
+            AND person_code LIKE CONCAT(CONCAT('%', #{personCode, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="departmentName != null and departmentName !=''">
+            AND department_name LIKE CONCAT(CONCAT('%', #{departmentName, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="level != null">
+            AND level=#{level,jdbcType=INTEGER}
+        </if>
+        <if test="type != null ">
+            AND type=#{type,jdbcType=INTEGER}
+        </if>
+        <if test="fenceName != null and fenceName !=''">
+            AND fence_name LIKE CONCAT(CONCAT('%', #{fenceName, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="status != null ">
+            AND status=#{status,jdbcType=INTEGER}
+        </if>
+        order by
+        <choose>
+            <when test="sort!=null and sort !=''">
+                ${sort}
+                <if test="order!=null and order !=''">
+                    ${order}
+                </if>
+            </when>
+            <otherwise>
+                timestamp desc
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <!--根据报警级别分组查询报警统计-->
+    <select id="warningStatistics" resultType="java.util.HashMap"
+            parameterType="map">
+        SELECT level,COUNT(*) as count
+        FROM uwb_warnings
+        WHERE level is not null and op=1
+        <if test="startTime != null  and endTime != null ">
+            AND timestamp BETWEEN #{startTime,jdbcType=BIGINT} AND
+            #{endTime,jdbcType=BIGINT}
+        </if>
+        <if test="personCode!=null and personCode!=''">
+            AND person_code =#{personCode,jdbcType=VARCHAR}
+        </if>
+        GROUP BY level
+    </select>
+
+
+    <!--根据报警数量排序-->
+    <select id="topPersons" resultType="com.zhilutec.dbs.pojos.WarningRs"
+            parameterType="map">
+        SELECT person_name, person_code, COUNT(*) as amount
+        FROM uwb_warnings
+        WHERE op=1
+        GROUP BY person_code
+        ORDER BY amount desc,timestamp desc
+        limit 0,#{limit,jdbcType=INTEGER}
+    </select>
+
+
+    <!--分类统计指定人群的各级报警统计-->
+    <select id="topWarnings" resultType="com.zhilutec.dbs.pojos.WarningLevelRs"    parameterType="map">
+        SELECT person_name,person_code,level, COUNT(*) as count
+        FROM uwb_warnings
+        WHERE op=1 AND person_code IN
+        <foreach collection="personCodes" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY level,person_code
+        ORDER BY count desc
+    </select>
+
+</mapper>
