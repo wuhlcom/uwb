@@ -6,14 +6,14 @@
     </personnel-selection>
     <div class="map">
       <div class="show-selection">
-        <selection @msg="nameShows" class="selection" msg="显示名字">
+        <selection @msg="nameShowFn" class="selection" msg="显示名字">
         </selection>
-        <selection @msg="trackShows" class="selection" msg="显示轨迹">
+        <selection @msg="trackShowFn" class="selection" msg="显示轨迹">
         </selection>
-        <!-- <selection @msg="statusShows" class="selection" msg="显示状态"></selection> -->
-        <selection @msg="areaShows" class="selection" msg="显示围栏">
+        <!-- <selection @msg="statusShowFn" class="selection" msg="显示状态"></selection> -->
+        <selection @msg="areaShowFn" class="selection" msg="显示围栏">
         </selection>
-        <selection @msg="gridsShows" class="selection" msg="显示标尺">
+        <selection @msg="gridsShowFn" class="selection" msg="显示标尺">
         </selection>
       </div>
       <div ref="viewBox" class="viewBox">
@@ -32,21 +32,21 @@
           class="map-box">
           <img :src="imgUrl">
           <draw-grids
-            v-if="gridsShow"
+            v-if="isGridsShow"
             class="canvas">
           </draw-grids>
           <area-show
             :rectangle='ratioRectangle'
             :polygon="ratioPolygon"
             class="canvas"
-            v-if="areaShow">
+            v-if="isAreaShow">
           </area-show>
           <draw-point
             class="canvas"
-            :statusShow="statusShow"
+            :statusShow="isStatusShow"
             :allPerson="allPerson"
             :a="a"
-            :nameShow="nameShow">
+            :nameShow="isNameShow">
           </draw-point>
           <flickering
             class="canvas"
@@ -54,7 +54,7 @@
             :point="allPerson">
           </flickering>
         </div>
-        <div v-if="gridsShow" class="ide">
+        <div v-if="isGridsShow" class="ide">
           标尺：
           <i class="square"></i>
           1m x 1m
@@ -160,26 +160,25 @@ export default {
       canvasWidth: 0, // canvas的宽
       canvasHeight: 0, // canvas的高
       viewSize: document.body.clientWidth, // 初始化视图窗口大小，这个很重要！！！
+      // 地图的实际大小
       actualSize: {
-        // 地图的实际大小
         width: 0,
         height: 0
       },
+      // 地图比例
       proportion: {
-        // 地图比例
         width: 0,
         height: 0
       },
-      canvasShow: false, // cnvas是否显示
       rectangle: [], // 区域划分
       ratioRectangle: [], // 计算比例后的区域
       polygon: [],
       ratioPolygon: [],
-      areaShow: false,
-      trackShow: false,
-      nameShow: false,
-      gridsShow: false,
-      statusShow: true,
+      isAreaShow: false,
+      isTrackShow: false,
+      isNameShow: false,
+      isGridsShow: false,
+      isStatusShow: true,
       pitchOn: [],
       a: 0, // 当websockt接收到数据时a加一，位置显示的子组件监听到a变化时对canvas进行重绘
       imgUrl: "",
@@ -345,25 +344,32 @@ export default {
         }
       }
     },
-    areaShows(msg) {
-      this.areaShow = msg
+    areaShowFn(msg) {
+      this.isAreaShow = msg
     },
-    trackShows(msg) {
-      this.trackShow = msg
+    trackShowFn(msg) {
+      this.isTrackShow = msg
+      if (!msg) {
+        this.allPerson.forEach(e => {
+          let i = e.point.pop()
+          e.point = []
+          e.point.push(i)
+        })
+      }
       this.a++
     },
-    gridsShows(msg) {
-      this.gridsShow = msg
+    gridsShowFn(msg) {
+      this.isGridsShow = msg
     },
-    nameShows(msg) {
-      this.nameShow = msg;
+    nameShowFn(msg) {
+      this.isNameShow = msg;
       this.a++
     },
     navShows(msg) {
       this.navShow += msg
     },
-    statusShows(msg) {
-      this.statusShow = msg
+    statusShowFn(msg) {
+      this.isStatusShow = msg
     },
     // 设置canvas的宽高，宽高等于地图的大小
     setCanvasSize() {
@@ -416,7 +422,6 @@ export default {
         this.ratioCalculation()
         this.webSowcket()
         this.setCanvasSize()
-        this.canvasShow = true
         this.$store.commit('setWidth', {
           actualWidth: this.actualSize.width,
           clientWidth: this.$refs.map.clientWidth
@@ -427,8 +432,14 @@ export default {
         })
       }, 1000)
     },
+    getWebSocketURL() {
+      if (window.location.port === '9999') {
+        return 'ws://192.168.10.232:80/coordinate/coors';
+      }
+      return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/coordinate/coors'
+    },
     webSowcket() {
-      let ws = new WebSocket(WEB_SOCKET_URL)
+      let ws = new WebSocket(this.getWebSocketURL())
       ws.onopen = () => {
         ws.send('{"type":1}')
       };
@@ -456,9 +467,9 @@ export default {
               }
               /* 
               * 轨迹点最多保存60个，当等于60个时删除第一个并增加一个点
-              * trackShow用来判断是否显示轨迹
+              * isTrackShow用来判断是否显示轨迹
               */
-              if (this.trackShow) {
+              if (this.isTrackShow) {
                 if (el.point.length < 60) {
                   el.point.push(point)
                 } else {
@@ -564,7 +575,7 @@ export default {
           }
         })
       })
-    }
+    }, 
   }
 }
 </script>

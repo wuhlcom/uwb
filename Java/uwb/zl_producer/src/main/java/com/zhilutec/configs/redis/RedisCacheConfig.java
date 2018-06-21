@@ -128,12 +128,15 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
         //开启事务支持
         redisTemplate.setEnableTransactionSupport(true);
 
-        // 设置value的序列化规则和 key的序列化规则
+        // 设置key的序列化规则
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 
-        redisTemplate.setValueSerializer(new EntityRedisSerializer());
-        redisTemplate.setHashValueSerializer(new EntityRedisSerializer());
+        // 设置自定义value的序列化规则
+        // redisTemplate.setValueSerializer(new EntityRedisSerializer());
+        // redisTemplate.setHashValueSerializer(new EntityRedisSerializer());
+        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+        redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
 
 
         redisTemplate.afterPropertiesSet();

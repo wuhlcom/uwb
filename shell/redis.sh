@@ -13,7 +13,7 @@ EXEC=${REDIS_HOME}/redis-server
 CLIEXEC=${REDIS_HOME}/redis-cli
 PIDFILE=/var/run/redis_${REDISPORT}.pid
 CONF=/etc/redis/redis.conf
-PASSWD=`awk '/^requirepass */{print $2}' /etc/redis/redis.conf`
+PASSWD=`awk '/^requirepass */{print $2}' ${CONF}`
 PID=`ps -ef|grep -v grep |grep redis-server|awk '{print $2}'`
 
 case "$1" in

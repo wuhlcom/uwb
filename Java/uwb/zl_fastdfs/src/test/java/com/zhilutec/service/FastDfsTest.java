@@ -66,10 +66,10 @@ public class FastDfsTest {
 
     @Test
     public void getTracker() throws Exception {
-        FileManage.initFastDFSPool();
-        IFastDFSFileService ifO = FileManage.createtDefaultDevice();
-        String rs = ifO.getTrackerUrl();
-        System.out.println(rs);
+        // FileManage.initFastDFSPool();
+        // IFastDFSFileService ifO = FileManage.createtDefaultDevice();
+        // String rs = ifO.getTrackerUrl();
+        // System.out.println(rs);
     }
 
 
@@ -83,6 +83,9 @@ public class FastDfsTest {
 
     @Test
     public void deleteFile() {
+        // 静态调用过去 最后调用spring容器bean 但是没有容器初始化 所以NPE
+        // 如果想要在spring之外使用spring容器 可以继承ApplicationContextAware拿到ApplicationContext 然后getBean
+        // 或者将调用方法链上的对象都交给spring管理
         FileManage.initFastDFSPool();
         IFastDFSFileService ifO = FileManage.createtDefaultDevice();
         String groupName = "group1";

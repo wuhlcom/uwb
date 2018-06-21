@@ -4,32 +4,37 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
 import org.csource.fastdfs.TrackerServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+
+@Component
 public class HeartBeat {
+
     private static final Logger LOGGER = LoggerFactory
             .getLogger(HeartBeat.class);
 
     private FastDFSConnectionPool pool = null;
 
-    /**
-     * 30分钟
-     */
-//    public static int beatratio = 1000 * 60 * 30 * 1;
-    public static int beatratio = 1000 * 5 * 1 * 1;
+    @Value("${fastdfs.pool.waitTimes}")
+    private long waitTimes;
 
-    public static int waitTimes = 20;
+    @Value("${fastdfs.pool.heartRatio}")
+    private long heartRatio;
 
     public HeartBeat(FastDFSConnectionPool pool) {
         this.pool = pool;
     }
 
+
     /**
-     *
      * 定时执行任务，检测当前的空闲连接是否可用，如果不可用将从连接池中移除
-     *
      */
     public void beat() {
         TimerTask task = new TimerTask() {
@@ -55,7 +60,7 @@ public class HeartBeat {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(task, beatratio, beatratio);
+        timer.schedule(task, heartRatio, heartRatio);
     }
 
 }

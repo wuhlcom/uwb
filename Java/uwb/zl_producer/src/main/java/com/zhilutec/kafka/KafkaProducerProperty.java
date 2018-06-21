@@ -32,6 +32,7 @@ public class KafkaProducerProperty {
     private String lingerMs;
     private String retries;
     private String defaultTopic;
+    private String protocol;
 
     public Boolean getListener() {
         return listener;
@@ -111,6 +112,14 @@ public class KafkaProducerProperty {
 
     public void setDefaultTopic(String defaultTopic) {
         this.defaultTopic = defaultTopic;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     @Override

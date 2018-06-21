@@ -2,6 +2,7 @@ package com.zhilutec.configs.redis;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.SerializationException;
 
+//自定义序列化方式
 //redis超时注解
 public class EntityRedisSerializer implements RedisSerializer<Object>{
 

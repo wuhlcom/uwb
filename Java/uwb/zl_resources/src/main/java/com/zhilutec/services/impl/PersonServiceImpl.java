@@ -339,6 +339,7 @@ public class PersonServiceImpl extends IRedisService<Person> implements IPersonS
             //新tagId为空，旧tagId不为空,删除对应策略和报警缓存
             if (tagId == null && personTagId != null) {
                 this.removeCache(personTagId);
+                this.delPersonCache(personTagId);
             } else if (tagId != null && personTagId != null) {
                 //tagId不为空，旧tagId不为空，且新旧tagId不相同
                 //当tagId与旧tagId不相同，部门不为空且部门有策略时刷新策略缓存同时要删除旧的策略缓存

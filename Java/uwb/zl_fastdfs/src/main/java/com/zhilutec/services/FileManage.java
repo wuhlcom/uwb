@@ -6,8 +6,9 @@ import com.zhilutec.services.impl.FastDFSFileServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
+//不被spring管理也可以使用
+//此类用于测试
 @Configuration
 public class FileManage {
 

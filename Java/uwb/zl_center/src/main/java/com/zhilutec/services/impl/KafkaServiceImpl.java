@@ -474,17 +474,24 @@ public class KafkaServiceImpl implements IKafkaService {
             hCount += 1;
             //更新计数器
             hashOperations.put(key, ConstantUtil.HEART_COUNT_HIGHT, hCount);
+            if (lCount != 0) {
+                hashOperations.put(key, ConstantUtil.HEART_COUNT_LOW, 0);
+            }
             if (hCount.intValue() >= ConstantUtil.HEART_ALARM_COUNT.intValue()) {
-                heartAlarmMsg = "手环心率过高";
+                heartAlarmMsg = "报警心率" + heartRate.intValue() + "bpm,心率过高";
             }
         } else if (heartRate.intValue() <= ConstantUtil.HEART_LOW_THRESHOLD.intValue()) {
             lCount += 1;
             //更新计数器
             if (lCount.intValue() >= ConstantUtil.HEART_ALARM_COUNT.intValue() - 1) {
-                heartAlarmMsg = "手环心率过低";
+                // heartAlarmMsg = "手环心率过低";
+                heartAlarmMsg = "报警心率" + heartRate.intValue() + "bpm,心率过低";
             }
             hashOperations.put(key, ConstantUtil.HEART_COUNT_LOW, lCount);
-        }else  if (heartRate.intValue() > ConstantUtil.HEART_LOW_THRESHOLD.intValue() && heartRate.intValue() < ConstantUtil.HEART_UP_THRESHOLD.intValue()) {
+            if (hCount != 0) {
+                hashOperations.put(key, ConstantUtil.HEART_COUNT_HIGHT, 0);
+            }
+        } else if (heartRate.intValue() > ConstantUtil.HEART_LOW_THRESHOLD.intValue() && heartRate.intValue() < ConstantUtil.HEART_UP_THRESHOLD.intValue()) {
             //当心率值为正常时，要取消已存在的心率报警
             String oldAlarm = statusService.redisGet(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
             if (oldAlarm != null && !oldAlarm.isEmpty()) {
@@ -501,7 +508,7 @@ public class KafkaServiceImpl implements IKafkaService {
                 hashOperations.put(key, ConstantUtil.HEART_COUNT_LOW, lCount);
             }
         } else if (heartRate.intValue() == ConstantUtil.STATUS_NONE.intValue() || heartRate.intValue() == ConstantUtil.ZERO_THRESHOLD.intValue()) {
-            logger.info("当前心率值为:" + heartRate + "获取心率异常");
+            logger.info("当前心率值为" + heartRate + "bpm,获取心率异常");
         }
 
         if (!heartAlarmMsg.isEmpty()) {
@@ -531,7 +538,7 @@ public class KafkaServiceImpl implements IKafkaService {
                 statusService.redisDel(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
             }
         } else if (power.intValue() == ConstantUtil.STATUS_NONE.intValue() || power.intValue() > ConstantUtil.POWER_UP_THRESHOLD.intValue() || power.intValue() == ConstantUtil.ZERO_THRESHOLD) {
-            logger.info("当前电量值为：" + power.intValue() + "获取电量异常");
+            logger.info("当前电量值为：" + power.intValue() + "%,获取电量异常");
         }
 
 
@@ -781,7 +788,11 @@ public class KafkaServiceImpl implements IKafkaService {
         String oldWarning = statusService.redisGet(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复发推送
-        if (isSameWarning(warningMsg, oldWarning)) return null;
+        // if (isSameWarning(warningMsg, oldWarning)) return null;
+        //如果存在旧的报警则不创建新的报警
+        if (oldWarning != null) {
+            return warning;
+        }
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_URGEN, ConstantUtil.HEART_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         statusService.redisAdd(ConstantUtil.HEART_ALARM_KEY_PRE, tagId, JSON.toJSONString(warning));
         return warning;
@@ -804,7 +815,11 @@ public class KafkaServiceImpl implements IKafkaService {
         String oldWarning = statusService.redisGet(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复推送
-        if (isSameWarning(warningMsg, oldWarning)) return null;
+        // if (isSameWarning(warningMsg, oldWarning)) return null;
+        //如果存在旧的报警则不创建新的报警
+        if (oldWarning != null) {
+            return warning;
+        }
         //将上一次的坐标添加到报警中表明报警产生的位置
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_COMM, ConstantUtil.POWER_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         //添加报警缓存
@@ -816,7 +831,11 @@ public class KafkaServiceImpl implements IKafkaService {
         String oldWarning = statusService.redisGet(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复推送
-        if (isSameWarning(warningMsg, oldWarning)) return null;
+        // if (isSameWarning(warningMsg, oldWarning)) return null;
+        //如果存在旧的报警则不创建新的报警
+        if (oldWarning != null) {
+            return warning;
+        }
         //将上一次的坐标添加到报警中表明报警产生的位置
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_URGEN, ConstantUtil.SOS_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         //添加报警缓存
@@ -828,7 +847,11 @@ public class KafkaServiceImpl implements IKafkaService {
         String oldWarning = statusService.redisGet(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复推送
-        if (isSameWarning(warningMsg, oldWarning)) return null;
+        // if (isSameWarning(warningMsg, oldWarning)) return null;
+        //如果存在旧的报警则不创建新的报警
+        if (oldWarning != null) {
+            return warning;
+        }
         //将上一次的坐标添加到报警中表明报警产生的位置
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_URGEN, ConstantUtil.WRISTLET_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         //添加报警缓存

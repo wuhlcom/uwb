@@ -7,17 +7,25 @@ import org.csource.fastdfs.TrackerClient;
 import org.csource.fastdfs.TrackerServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 
-
-import java.io.*;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-@Configuration
+// @SuppressWarnings("SpringJavaAutowiringInspection")
+// @DependsOn("fastDfsProp")
+@Component
 public class FastDFSConnectionPool {
+
+    @Resource
+    FastDFSProp fastDFSProp;
+
+    @Resource
+    HeartBeat heartBeat;
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(FastDFSConnectionPool.class);
@@ -28,41 +36,41 @@ public class FastDFSConnectionPool {
     private static LinkedBlockingQueue<TrackerServer> IDLE_CONNECTION_POOL = new LinkedBlockingQueue<TrackerServer>();
 
 
-    /**
-     * 连接池默认最小连接数，不能超过服务器实际最大连接数限制
-     */
-    private long minPoolSize = 200;
+    //在构建函数中初化会使依赖注入会在类初化之前
+    // public FastDFSConnectionPool() {
+    //     poolInit();
+    //     HeartBeat beat = new HeartBeat(this);
+    //     beat.beat();
+    // }
+    //
 
-    /**
-     * 默认等待时间（单位：秒）
-     */
-    private long waitTimes = 10;
-
-    public FastDFSConnectionPool() {
+    //构造函数初始化,先于需要注入的bean,所以这里要把原来的在构造函数中的初始化注释掉
+    //PostConstruct 注释用于在依赖关系注入完成之后需要执行的方法上，以执行任何初始化。
+    @PostConstruct
+    public void init() {
         poolInit();
-        HeartBeat beat = new HeartBeat(this);
-        beat.beat();
+        heartBeat.beat();
     }
+
 
     private void poolInit() {
         try {
             this.initClientGlobal();
-            for (int i = 0; i < minPoolSize; i++) {
+            for (int i = 0; i < fastDFSProp.getMinPoolSize(); i++) {
                 this.createTrackerServer();
             }
-            LOGGER.info("[FASTDFS初始化]] " + IDLE_CONNECTION_POOL.size());
+            LOGGER.info("[FASTDFS CONNECTION POOL初始化]--连接池大小为:{}",IDLE_CONNECTION_POOL.size());
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[FASTDFS初始化--异常]{}]", e);
+            LOGGER.error("[FASTDFS CONNECTION POOL初始化]--[异常:{}]", e);
         }
     }
 
     /**
-     * 初始化配置文件
+     * 初始化配置
      */
-    private void initClientGlobal() throws Exception {
+    private void initClientGlobalStr() throws Exception {
         String propFile = "application.properties";
-
         //两种获取项目下配置文件路径的方法
         // String configFile  = ClassLoader.getSystemResource("fdfs_client.conf").getFile();
         // URL url = FastDFSConnectionPool.class.getResource("/fdfs_client.conf");
@@ -70,8 +78,26 @@ public class FastDFSConnectionPool {
         // File file = resource.getFile();
         // String configFile = file.getAbsolutePath();
         try {
-            // ClientGlobal.init(configFile);
             ClientGlobal.initByProperties(propFile);
+        } catch (IOException | MyException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //初始化fastdfs配置
+    private void initClientGlobal() throws Exception {
+        Properties props = new Properties();
+        //注意这里要使用ClientGlobal.PROP_KEY_而不能使用ClientGlobal.CONF_KEY_
+        //要与application中的一致
+        props.put(ClientGlobal.PROP_KEY_TRACKER_SERVERS, fastDFSProp.getTrackerServers());
+        props.put(ClientGlobal.PROP_KEY_CONNECT_TIMEOUT_IN_SECONDS, fastDFSProp.getConnTimeout());
+        props.put(ClientGlobal.PROP_KEY_NETWORK_TIMEOUT_IN_SECONDS, fastDFSProp.getNetTimeout());
+        props.put(ClientGlobal.PROP_KEY_CHARSET, fastDFSProp.getCharset());
+        props.put(ClientGlobal.PROP_KEY_HTTP_ANTI_STEAL_TOKEN, fastDFSProp.getStealToken());
+        props.put(ClientGlobal.PROP_KEY_HTTP_SECRET_KEY, fastDFSProp.getSecretKey());
+        props.put(ClientGlobal.PROP_KEY_HTTP_TRACKER_HTTP_PORT, fastDFSProp.getTrackerHttpPort());
+        try {
+            ClientGlobal.initByProperties(props);
         } catch (IOException | MyException e) {
             e.printStackTrace();
         }
@@ -89,7 +115,7 @@ public class FastDFSConnectionPool {
             IDLE_CONNECTION_POOL.add(trackerServer);
         } catch (Exception e) {
             e.printStackTrace();
-            LOGGER.error("[创建TrackerServer(createTrackerServer)][异常：{}]", e);
+            LOGGER.error("[创建TrackerServer(createTrackerServer)]--[异常：{}]", e);
         }
     }
 
@@ -100,12 +126,12 @@ public class FastDFSConnectionPool {
      */
     public TrackerServer achieve() throws InterruptedException {
 
-        TrackerServer trackerServer = IDLE_CONNECTION_POOL.poll(waitTimes,
+        TrackerServer trackerServer = IDLE_CONNECTION_POOL.poll(fastDFSProp.getWaitTimes(),
                 TimeUnit.SECONDS);
         if (trackerServer == null) {
             LOGGER.info("[trackerServer is NULL] ");
             this.createTrackerServer();
-            trackerServer = IDLE_CONNECTION_POOL.poll(waitTimes, TimeUnit.SECONDS);
+            trackerServer = IDLE_CONNECTION_POOL.poll(fastDFSProp.getWaitTimes(), TimeUnit.SECONDS);
         }
         LOGGER.info("[获取空闲连接成功]");
         return trackerServer;
@@ -119,8 +145,7 @@ public class FastDFSConnectionPool {
      */
 
     public void release(TrackerServer trackerServer) {
-
-        LOGGER.info("[释放当前连接[prams:" + trackerServer + "] ");
+        LOGGER.info("[释放当前连接[prams:" + trackerServer.getInetSocketAddress().getAddress().getHostName() + "] ");
         if (trackerServer != null) {
             IDLE_CONNECTION_POOL.add(trackerServer);
         }
@@ -132,7 +157,7 @@ public class FastDFSConnectionPool {
      * @param trackerServer
      */
     public synchronized void drop(TrackerServer trackerServer) {
-        LOGGER.info("[删除不可用连接方法(drop)][parms:" + trackerServer + "] ");
+        LOGGER.info("[删除不可用连接方法(drop)][parms:" + trackerServer.getInetSocketAddress().getAddress().getHostName() + "] ");
         if (trackerServer != null) {
             try {
                 trackerServer.close();
@@ -147,20 +172,10 @@ public class FastDFSConnectionPool {
         return IDLE_CONNECTION_POOL;
     }
 
-    public void setMinPoolSize(long minPoolSize) {
-        if (minPoolSize != 0) {
-            this.minPoolSize = minPoolSize;
-        }
-    }
 
-    public void setWaitTimes(int waitTimes) {
-        if (waitTimes != 0) {
-            this.waitTimes = waitTimes;
-        }
-    }
 
     public void addTrackerServer(TrackerServer trackerServer) {
-        float poolPercentage = (float) (IDLE_CONNECTION_POOL.size()) / this.minPoolSize * 100;
+        float poolPercentage = (float) (IDLE_CONNECTION_POOL.size()) / fastDFSProp.getMinPoolSize() * 100;
         //获取格式化对象
         // NumberFormat nt = NumberFormat.getPercentInstance();
         // //设置百分数精确度2即保留两位小数

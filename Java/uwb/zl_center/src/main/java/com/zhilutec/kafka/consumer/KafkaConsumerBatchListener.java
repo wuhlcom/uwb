@@ -43,8 +43,8 @@ public class KafkaConsumerBatchListener {
     public void listener(List<ConsumerRecord<String, String>> records, Acknowledgment ack) {
         logger.info("--------consumer-批量Poll到的数组大小:" + records.size() + "-------");
         for (ConsumerRecord<String, String> record : records) {
-           System.out.println(record.value());
-       }
+            logger.info(record.value());
+        }
         //debug
         kafkaTemplate.setProducerListener(new KafkaProducerListener());
         try {

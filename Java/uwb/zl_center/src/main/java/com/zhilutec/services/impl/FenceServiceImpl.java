@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class FenceServiceImpl extends IRedisService<Fence> implements IFenceService {
 
     @Autowired
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     FenceDao fenceDao;
 
     @Override

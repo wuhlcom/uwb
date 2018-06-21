@@ -263,8 +263,14 @@ export default {
           break;
       }
     },
+    getWebSocketURL() {
+      if (window.location.port === '9999') {
+        return 'ws://192.168.10.232:80/alarm/alarms';
+      }
+      return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/alarm/alarms'
+    },
     webSowcket() {
-      let ws = new WebSocket(WS_ALARM_URL)
+      let ws = new WebSocket(this.getWebSocketURL())
       ws.onopen = () => {
         ws.send('{"type":1}')
       };

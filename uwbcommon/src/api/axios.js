@@ -2,7 +2,7 @@ import axios from 'axios'
 import qs from 'qs'
 
 // axios配置
-axios.defaults.timeout = 5000
+axios.defaults.timeout = 30000
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlenconded;charset=UTF-8'
 // 可以替换为需要的API
 // axios.defaults.baseURL = 'http://192.168.10.123:8800'

@@ -8,12 +8,15 @@
 # :set ff?
 # :set ff=unix
 set -e
-set -u
+#set -u
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DESC="nginx daemon"
 NAME=nginx
 DAEMON=/usr/local/nginx/sbin/${NAME}
 NGINX_CONF=/etc/nginx/${NAME}.conf
+if [ -n "$2" ]; then
+  NGINX_CONF=$2
+fi
 SCRIPTNAME=/etc/init.d/${NAME}.sh
 # If the daemon file is not found, terminate the script.
 # 检查文件是否存在

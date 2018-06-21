@@ -31,7 +31,8 @@
 
     <!-- 用来定义变量值的标签， 有两个属性，name和value；其中name的值是变量的名称，value的值时变量定义的值。 -->
     <!-- 通过定义的值会被插入到logger上下文中。定义变量后，可以使“${}”来使用变量。 -->
-    <property name="LogDir" value="/var/log/uwb/${ctxName}"/>
+    <!--<property name="LogDir" value="/var/log/uwb/${ctxName}"/>-->
+    <property name="LogDir" value="/zldata/uwb/logs/${ctxName}"/>
     <if condition='isDefined("catalina.home")'>
         <then>
             <property name="LogDir" value="${catalina.home}/logs"/>
@@ -128,10 +129,6 @@
         level="DEBUG" additivity="false"> <appender-ref ref="STDOUT" /> <appender-ref
         ref="ROLLINGFILE" /> </logger> -->
 
-    <!-- <logger name="com.dazk.common.util.ConsoleUtils" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" /> <appender-ref ref="ROLLINGFILE"/> </logger>
-        <logger name="com.dazk.common.util.upload.UploadUtils" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" /> <appender-ref ref="ROLLINGFILE" /> </logger> -->
 
     <!-- <logger name="org.apache.commons" level="INFO" additivity="false" />
         <logger name="freemarker.cache" level="INFO" additivity="false" /> <logger

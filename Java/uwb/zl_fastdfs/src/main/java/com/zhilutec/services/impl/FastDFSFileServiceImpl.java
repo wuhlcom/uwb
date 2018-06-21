@@ -386,18 +386,6 @@ public class FastDFSFileServiceImpl implements IFastDFSFileService {
         }
     }
 
-
-    @Override
-    public String getTrackerUrl() {
-        String hostPort = this.getTrackerHost();
-        String trackerUrl = null;
-        if (hostPort != null) {
-            trackerUrl = "http://" + hostPort;
-        }
-
-        return trackerUrl;
-    }
-
     @Override
     public String getTrackerAddrUrl() {
         String addrPort = this.getTrackerAddr();
@@ -409,33 +397,14 @@ public class FastDFSFileServiceImpl implements IFastDFSFileService {
         return trackerUrl;
     }
 
-    @Override
-    public String getTrackerHost() {
-        TrackerServer trackerServer = this.getTrackerServer();
-        String trackerHost = null;
-        try {
-            trackerHost = trackerServer.getInetSocketAddress().getHostString() + ":" + ClientGlobal.getG_tracker_http_port() + "/";
-            this.release(trackerServer);
-        } catch (Exception e) {
-            this.drop(trackerServer);
-            e.printStackTrace();
-        }
 
-        /*回收连接*/
-        if (trackerServer != null) {
-            this.addTrackerServer(trackerServer);
-        }
-
-        return trackerHost;
-    }
-
+    //trackerServer.getInetSocketAddress().getAddress().getHostName()当有域名时返回是域名，没有域名时返回的是ip地址
     @Override
     public String getTrackerAddr() {
         TrackerServer trackerServer = this.getTrackerServer();
         String trackerAdd = null;
-
         try {
-            trackerAdd = trackerServer.getInetSocketAddress().getAddress() + ":" + ClientGlobal.getG_tracker_http_port() + "/";
+            trackerAdd = trackerServer.getInetSocketAddress().getAddress().getHostName() + ":" + ClientGlobal.getG_tracker_http_port() + "/";
             this.release(trackerServer);
         } catch (Exception e) {
             this.drop(trackerServer);

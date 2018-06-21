@@ -83,12 +83,9 @@ public interface IFastDFSFileService {
 
     String downloadFileByNameRs(JSONObject jsonObject);
 
-    String getTrackerUrl();
 
     String getTrackerAddrUrl();
 
-
-    String getTrackerHost();
 
     String getTrackerAddr();
 

@@ -14,7 +14,7 @@
     name: 'area-show',
     props: {
       rectangle: {
-        tyepe: Array
+        type: Array
       },
       polygon: {
         type: Array

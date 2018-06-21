@@ -4,9 +4,9 @@
 
 const path = require('path')
 // const URL = '192.168.10.232:80'
-const URL = 'localhost:80'
+// const URL = 'localhost:80'
 // const URL = '192.168.10.232:80'
-// const url = require('../static/js/url.js')
+const url = require('../static/js/url.js')
 
 module.exports = {
   dev: {
@@ -15,28 +15,28 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/resources': {
-        target: 'http://' + URL + '/resources',
+        target: 'http://' + url.url + '/resources',
         changeOrigin: true,
         pathRewrite: {
           '^/resources': ''
         }
       },
       '/fastdfs': {
-        target: 'http://' + URL + '/fastdfs',
+        target: 'http://' + url.url + '/fastdfs',
         changeOrigin: true,
         pathRewrite: {
           '^/fastdfs': ''
         }
       },
       '/producer': {
-        target: 'http://' + URL + '/producer',
+        target: 'http://' + url.url + '/producer',
         changeOrigin: true,
         pathRewrite: {
           '^/producer': ''
         }
       },
       '/permission': {
-        target: 'http://' + URL + '/permission',
+        target: 'http://' + url.url + '/permission',
         changeOrigin: true,
         pathRewrite: {
           '^/permission': ''

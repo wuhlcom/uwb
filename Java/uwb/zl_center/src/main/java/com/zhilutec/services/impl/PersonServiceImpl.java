@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class PersonServiceImpl extends IRedisService<Person> implements IPersonService {
 
     @Autowired
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     PersonDao personDao;
 
     @Override

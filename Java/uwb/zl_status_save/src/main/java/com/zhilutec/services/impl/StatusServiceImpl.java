@@ -13,6 +13,7 @@ import java.util.List;
 public class StatusServiceImpl implements IStatusService {
 
     @Autowired
+    @SuppressWarnings("SpringJavaAutowiringInspection")
     StatusDao statusDao;
 
     @Override

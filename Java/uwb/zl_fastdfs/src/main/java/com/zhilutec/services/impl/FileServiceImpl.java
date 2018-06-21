@@ -146,13 +146,13 @@ public class FileServiceImpl implements IFileService {
         //获取总数
         long count = pageObj.getTotal();
         //生成地图url
-        String ipPort = fastDFSFileService.getTrackerAddrUrl();
+        String addrPort = fastDFSFileService.getTrackerAddrUrl();
 
         for (FileEntity fileEntity : fileEntities) {
             String downLoadPath = fileEntity.getRemotePath();
             fileEntity.setDownPath("/" + downLoadPath);
-            if (ipPort != null && !ipPort.isEmpty()) {
-                fileEntity.setPath(ipPort + downLoadPath);
+            if (addrPort != null && !addrPort.isEmpty()) {
+                fileEntity.setPath(addrPort + downLoadPath);
             }
             fileEntity.setRemotePath(null);
         }

@@ -168,11 +168,13 @@ public class UwbWebSocket {
      */
     @OnError
     public void onError(@PathParam("wsRequest") String wsRequest, Session session, Throwable error) throws IOException {
-        webSocketSet.remove(this);
-        webSocketMap.remove(wsRequest);
-        sessionMap.remove(session);
+        // webSocketSet.remove(this);
+        // webSocketMap.remove(wsRequest);
+        // sessionMap.remove(session);
         logger.info("Websocket连接发生错误");
-        session.close();
+        // session.close();
+        logger.error(error.toString());
+        logger.error(error.getCause().toString());
         error.printStackTrace();
     }
 

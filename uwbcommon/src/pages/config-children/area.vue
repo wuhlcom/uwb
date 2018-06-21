@@ -181,8 +181,21 @@ export default {
           this.tableData = rej.data.result
           this.total = rej.data.totalRows;
           this.tableData.forEach(e => {
-            if (e.type === 0) {
-              e.typeName = '矩形区'
+            switch (e.type) {
+              case 0:
+                e.typeName = '多边形'
+                break;
+              case 1:
+                e.typeName = '圆形'
+                break;
+              case 2:
+                e.typeName = '椭圆'
+                break;
+              case 3:
+                e.typeName = '矩形'
+                break;    
+              default:
+                break;
             }
           })
         });

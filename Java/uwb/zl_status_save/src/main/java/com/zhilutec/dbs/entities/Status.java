@@ -3,9 +3,9 @@ package com.zhilutec.dbs.entities;
 import javax.persistence.Table;
 
 @Table(name="uwb_status")
-public class Status {
-
-    private String persionName;
+public class Status extends Base  {
+    private static final long serialVersionUID = 1L;
+    private String personName;
     private Long tagId;
     private Integer power;
     private Integer heart;
@@ -15,12 +15,12 @@ public class Status {
     private Integer move;
     private Long timestamp;
 
-    public String getPersionName() {
-        return persionName;
+    public String getPersonName() {
+        return personName;
     }
 
-    public void setPersionName(String persionName) {
-        this.persionName = persionName;
+    public void setPersonName(String personName) {
+        this.personName = personName;
     }
 
     public Long getTagId() {
@@ -87,10 +87,12 @@ public class Status {
         this.timestamp = timestamp;
     }
 
+
     @Override
     public String toString() {
         return "Status{" +
-                "tagId=" + tagId +
+                "personName='" + personName + '\'' +
+                ", tagId=" + tagId +
                 ", power=" + power +
                 ", heart=" + heart +
                 ", type=" + type +

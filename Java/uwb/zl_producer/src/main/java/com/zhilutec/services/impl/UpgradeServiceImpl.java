@@ -8,6 +8,7 @@ import com.zhilutec.common.result.ResultCode;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.common.utils.RestUtil;
 import com.zhilutec.common.utils.UpgradeValidator;
+import com.zhilutec.configs.UpgradeConfig;
 import com.zhilutec.netty.tcpServer.TcpHandler;
 import com.zhilutec.services.IRedisService;
 import com.zhilutec.services.IUpgradeService;
@@ -24,6 +25,9 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
 
     @Autowired
     TcpHandler tcpHandler;
+
+    @Autowired
+    UpgradeConfig upgradeConfig;
 
     public Map<String, Channel> getActiveChannel() {
         Map<String, Channel> concurrentHashMap = TcpHandler.getSessionChMap();
@@ -49,13 +53,17 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
 
         // Thread.sleep(500);
         VersionInfo versionInfo = TcpHandler.getVersionInfo();
-        Map<String, Object> serverInfo = RestUtil.getServerinfo();
-        Integer errcode = (Integer) serverInfo.get("errcode");
-        if (errcode.intValue() != ResultCode.SUCCESS.getCode()) {
-            return serverInfo.toString();
-        }
-        versionInfo.setServerIP((String) serverInfo.get("serverIP"));
-        versionInfo.setServerPort((Integer) serverInfo.get("serverPort"));
+        // String url = upgradeConfig.getUpgradeIP() + ":" + upgradeConfig.getUpgradePort() + upgradeConfig.getUpgradeApi();
+        //  Map<String, Object> serverInfo = RestUtil.getServerinfo(url);
+        // Integer errcode = (Integer) serverInfo.get("errcode");
+        // if (errcode.intValue() != ResultCode.SUCCESS.getCode()) {
+        //     return serverInfo.toString();
+        // }
+        // versionInfo.setServerIP((String) serverInfo.get("serverIP"));
+        // versionInfo.setServerPort((Integer) serverInfo.get("serverPort"));
+
+        versionInfo.setServerIP(upgradeConfig.getUpgradeIP());
+        versionInfo.setServerPort(upgradeConfig.getUpgradePort());
 
         if (versionInfo.getAncVer() == null) {
             versionInfo.setAncVer("");
@@ -86,13 +94,13 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
             return rs.toJSONString();
         }
 
-        UpgradeInfo upgradeInfo = getUpgradeStatus();
+        UpgradeInfo upgradeInfo = this.getUpgradeStatus();
         Integer status = upgradeInfo.getUpStatus();
         if (status == ConstantUtil.UPGRADE_STAT_RUNN) {
             return Result.error("正在升级中，请稍后再试...").toJSONString();
         } else if (status == ConstantUtil.UPGRADE_STAT_REPEAT) {
             return Result.error("当前版本与升级的版本相同不需要升级").toJSONString();
-        }else {
+        } else {
             UpgradeInfo upgradeInfoChange = new UpgradeInfo();
             upgradeInfo.setUpStatus(ConstantUtil.UPGRADE_STAT_RUNN);
             upgradeInfo.setCmdType(ConstantUtil.UPGRADE_TYPE);
@@ -126,7 +134,7 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
 
         Thread.sleep(500);
         // UpgradeInfo upgradeInfo1 = TcpHandler.getUpgradeInfo();
-        UpgradeInfo upgradeInfo1 = getUpgradeStatus();
+        UpgradeInfo upgradeInfo1 = this.getUpgradeStatus();
         return Result.ok(upgradeInfo1).toJSONString();
     }
 

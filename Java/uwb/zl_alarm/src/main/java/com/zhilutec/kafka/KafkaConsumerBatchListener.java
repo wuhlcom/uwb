@@ -1,7 +1,6 @@
 package com.zhilutec.kafka;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.services.IKafkaService;
@@ -31,7 +30,8 @@ public class KafkaConsumerBatchListener {
     public void listener(List<ConsumerRecord<String, String>> records, Acknowledgment ack) {
         logger.info("========================批量Poll到的数组大小:" + records.size() + "========================");
         // for (ConsumerRecord<String, String> record : records) {
-        //     System.out.println(record.value());
+            // System.out.println(record.value());
+            // logger.info(record.value());
         // }
 
         try {
