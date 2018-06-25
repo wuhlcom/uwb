@@ -79,12 +79,12 @@ public class LoginController {
     @ApiOperation(value = "登录验证", notes = "根据TOken状态判断用户是否登录成功<br><hr/>", response = String.class)
     @ApiImplicitParams({
             @ApiImplicitParam(name = "token", value = "Token", required = true, dataType = "String", paramType = "body")})
-    @RequestMapping(value = "/islogin", method = {RequestMethod.POST}, produces = "application/json;charset=UTF-8")
-    public String islogin(@RequestBody JSONObject requestJson) {
+    @RequestMapping(value = "/loginStatus", method = {RequestMethod.POST}, produces = "application/json;charset=UTF-8")
+    public String loginStatus(@RequestBody JSONObject requestJson) {
         logger.info("============校验Token====================");
         logger.info("requestJson:" + requestJson.toJSONString());
         try {
-            return loginService.isLogin(requestJson);
+            return loginService.loginStatus(requestJson);
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error("请登录系统").toJSONString();

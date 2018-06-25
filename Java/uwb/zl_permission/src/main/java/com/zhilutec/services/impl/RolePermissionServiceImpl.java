@@ -5,7 +5,6 @@
 package com.zhilutec.services.impl;
 
 import com.zhilutec.services.IRolePermissionService;
-import com.zhilutec.services.IRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

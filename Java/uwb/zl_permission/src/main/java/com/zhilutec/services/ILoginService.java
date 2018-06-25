@@ -7,7 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 public interface ILoginService {
     String login(HttpServletRequest request, JSONObject requestJson);
 
-    String isLogin(JSONObject requestJson);
+    String loginStatus(JSONObject requestJson);
+
+    String loginStatus(String token);
 
     String logout(JSONObject jsonObject);
 }
