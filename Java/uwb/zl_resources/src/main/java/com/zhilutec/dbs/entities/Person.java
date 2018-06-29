@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Table(name = "uwb_persons")
 public class Person extends Base {
-    private static final long serialVersionUID = 1L;
+
     private String personName;
     private String personCode;  //varchar(32) NOT NULL COMMENT '编号',
     private String idcard;//` varchar(20) DEFAULT NULL COMMENT '身份证号码',

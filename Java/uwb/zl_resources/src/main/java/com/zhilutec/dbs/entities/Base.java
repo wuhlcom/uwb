@@ -3,11 +3,9 @@ package com.zhilutec.dbs.entities;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-import java.io.Serializable;
 
-public class Base implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+public class Base {
 
     @Id
     @Column(name = "id")

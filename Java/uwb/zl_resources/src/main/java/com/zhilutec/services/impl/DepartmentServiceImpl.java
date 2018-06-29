@@ -1,5 +1,6 @@
 package com.zhilutec.services.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.result.ResultCode;
@@ -25,10 +26,10 @@ import java.beans.Transient;
 import java.util.*;
 
 @Service
-public class DepartmentServiceImpl extends IRedisService<Department> implements IDepartmentService {
+public class DepartmentServiceImpl implements IDepartmentService {
 
-    private static final String DPT_CODE="departmentCode";
-    private static final String DPT_PARENT="parentCode";
+    private static final String DPT_CODE = "departmentCode";
+    private static final String DPT_PARENT = "parentCode";
 
     @Autowired
     DepartmentDao departmentDao;
@@ -39,6 +40,17 @@ public class DepartmentServiceImpl extends IRedisService<Department> implements 
     @Resource
     IStrategyService strategyService;
 
+    @Resource
+    IRedisService redisService;
+
+    @Override
+    @Transactional
+    public void departmentCacheInit() {
+        List<Department> departments = departmentDao.getDepartments();
+        for (Department department : departments) {
+            this.addDptCache(department);
+        }
+    }
 
     //添加部门
     //更新部门中添加的人员
@@ -51,8 +63,8 @@ public class DepartmentServiceImpl extends IRedisService<Department> implements 
 
         String parentCode = jsonObject.getString(DPT_PARENT);
         List<String> parentCodes = new ArrayList<>();
-        this.getAllParentCodes(parentCodes,parentCode);
-        if(parentCodes.size()>=5){
+        this.getAllParentCodes(parentCodes, parentCode);
+        if (parentCodes.size() >= 5) {
             return Result.error("最多只能添加五级部门").toJSONString();
         }
 
@@ -105,8 +117,8 @@ public class DepartmentServiceImpl extends IRedisService<Department> implements 
         }
 
         List<String> parentCodes = new ArrayList<>();
-        this.getAllParentCodes(parentCodes,parentCode);
-        if(parentCodes.size()>=5){
+        this.getAllParentCodes(parentCodes, parentCode);
+        if (parentCodes.size() >= 5) {
             return Result.error("最多只能添加五级部门").toJSONString();
         }
 
@@ -176,14 +188,14 @@ public class DepartmentServiceImpl extends IRedisService<Department> implements 
         //判断添加部门时是否添加人员
         if (persons != null && persons.size() > 0) {
             // 查询部门的策略列表
+            Example example = new Example(Person.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andIn("personCode", persons).andEqualTo("isdel", 1).andIsNotNull("tagId");
+            // 查询要添加的人员列表
+            List<Person> people = personDao.selectByExample(example);
             List<Strategy> strategies = strategyService.getStrategyByUserId(departmentCode);
             if (strategies != null && strategies.size() > 0) {
                 for (Strategy strategy : strategies) {
-                    Example example = new Example(Person.class);
-                    Example.Criteria criteria = example.createCriteria();
-                    criteria.andIn("personCode", persons).andEqualTo("isdel", 1).andIsNotNull("tagId");
-                    // 查询要添加的人员列表
-                    List<Person> people = personDao.selectByExample(example);
                     if (people != null && people.size() > 0) {
                         String timeValue = strategy.getTimeValue();
                         String strategyCode = strategy.getStrategyCode();
@@ -206,11 +218,13 @@ public class DepartmentServiceImpl extends IRedisService<Department> implements 
                             Long tagId = person.getTagId();
                             if (tagId != null) {
                                 //添加人员策略缓存
-                                strategyService.addTagidPolicy(tagId,strategyCode,redisPolicy);
+                                String key = redisService.genRedisKey(ConstantUtil.POLICY_KEY_PRE, tagId);
+                                redisService.hashAdd(key, strategyCode, redisPolicy, ConstantUtil.REDIS_DEFAULT_TTL);
                             }
                         }
                     }
                 }
+
             }
         }
     }
@@ -516,36 +530,21 @@ public class DepartmentServiceImpl extends IRedisService<Department> implements 
         return codes;
     }
 
-    @Override
-    protected String getRedisKey() {
-        return null;
-    }
 
     @Override
-    @Transactional
-    public void departmentCacheInit() {
-        List<Department> departments = departmentDao.getDepartments();
-        for (Department department : departments) {
-            this.addDptCache(department);
-        }
+    public void deleteDptCache(String departmentCode) {
+        String key = redisService.genRedisKey(ConstantUtil.DEPARTMENT_KEY_PRE, departmentCode);
+        redisService.delete(key);
     }
 
     @Override
     public void addDptCache(Department department) {
         String departmentCode = department.getDepartmentCode();
-        String key = ConstantUtil.DEPARTMENT_KEY_PRE + ":" + departmentCode;
-        this.put(key, departmentCode, department, ConstantUtil.REDIS_DEFAULT_TTL);
-    }
+        String keyPre = ConstantUtil.DEPARTMENT_KEY_PRE;
+        String key = redisService.genRedisKey(keyPre, departmentCode);
 
-    @Override
-    public void deleteDptCache(Department department) {
-        String departmentCode = department.getDepartmentCode();
-        this.deleteDptCache(departmentCode);
-    }
-
-    @Override
-    public void deleteDptCache(String departmentCode) {
-        String key = ConstantUtil.DEPARTMENT_KEY_PRE + ":" + departmentCode;
-        this.remove(key, departmentCode);
+        String str = JSON.toJSONString(department);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 }

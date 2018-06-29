@@ -1,12 +1,19 @@
 package com.zhilutec.services;
 
 import com.alibaba.fastjson.JSONObject;
+import com.zhilutec.dbs.entities.Status;
 
 public interface IStatusService {
 
-    void redisAdd(String keyPre, Long tagId, String msg);
 
-    void redisDel(String keyPre, Long tagId);
+    void addCache(String keyPre, Long tagId, String field, Object o);
 
-    String  redisGet(String keyPre, Long tagId);
+    void addCache(String key, String field, Object o);
+
+    void addCache(Long tagId, Status status);
+
+    Status getCache(Long tagId);
+
+    Object getCache(String key, String field);
+
 }

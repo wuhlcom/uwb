@@ -6,38 +6,21 @@ import java.util.List;
 
 public interface IWarningService {
 
-    List<Warning> getRedisWarnings(String key);
 
-    Warning getReidsWarning(String key, String field);
+    //获取缓存中围栏报警
+    List<Warning> getFenceWarnings(String key);
 
-    Warning getReidsWarning(Long tagId, String strategyCode, Integer level);
+    //获取缓存中其它报警
+    Warning getCache(String key);
 
-    void  deleteRedisWarning(String key, String field);
+    Warning getCache(String keyPre, Object o);
 
-    void deleteRedisWarning(Long tagId, String strategyCode, Integer level);
+    List<Warning> getFenceWarnings(Long tagId);
 
-    void deleteRedisWarning(Long tagId, Integer warningType);
+    void addRedisWarning(Long tagId, String strategyCode, Warning warning);
 
-    void putRedisWarning(Long tagId, String strategyCode, Integer level, Warning warning, long expire);
+    //删除单个报警缓存
+    Long delRedisWarning(String strategyCode, Long tagId, String warningKeyPre);
 
-    void addRedisWarning(Long tagId, Integer warningType, Warning warning, long expire);
-
-
-
-    List<Warning> getRedisWarningList(Long tagId);
-
-
-    List<String> getRedisStrList(Long tagId);
-
-    void addRedisWarning(Long tagId, Warning warning);
-
-
-
-    void addRedisWarning(Long tagId, String str);
-
-    void deleteRedisWarning(Long tagId, Warning warning);
-
-
-
-    void deleteRedisWarning(Long tagId, String str);
+    void addCache(String keyPre, Long tagId, Warning warning);
 }

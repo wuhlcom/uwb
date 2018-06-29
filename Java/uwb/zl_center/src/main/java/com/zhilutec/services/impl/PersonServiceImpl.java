@@ -1,5 +1,6 @@
 package com.zhilutec.services.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.dbs.daos.PersonDao;
 import com.zhilutec.dbs.entities.Person;
@@ -8,33 +9,29 @@ import com.zhilutec.services.IRedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Map;
+
 @Service
-public class PersonServiceImpl extends IRedisService<Person> implements IPersonService {
+public class PersonServiceImpl implements IPersonService {
 
-    @Autowired
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    PersonDao personDao;
-
-    @Override
-    protected String getRedisKey() {
-        return null;
-    }
+    @Resource
+    IRedisService redisService;
 
     @Override
-    public void flushdDbData() {
-        this.flushdb();
-    }
+    public Person getCache(Long tagId) {
+        Person person = null;
+        String key = redisService.genRedisKey(ConstantUtil.PERSON_KEY_PRE, tagId);
+        Map map = redisService.hashGetMap(key);
 
-    @Override
-    public String getPersonName(Long tagId) {
-        String key = ConstantUtil.PERSON_KEY_PRE + ":" + tagId.toString();
-        return this.strGet(key);
-    }
+        if (map == null) {
+            return person;
+        }
 
-    @Override
-    public Person getPerson(Long tagId) {
-        String key = ConstantUtil.PERSON_KEY_PRE + ":" + tagId.toString();
-        return this.get(key, tagId.toString());
+        String mapStr = JSONObject.toJSONString(map);
+        person = JSONObject.parseObject(mapStr, Person.class);
+
+        return person;
     }
 
 

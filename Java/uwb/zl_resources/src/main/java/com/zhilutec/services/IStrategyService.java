@@ -31,7 +31,8 @@ public interface IStrategyService {
 
     void addTagidPolicy(Long tagId, String strategyCode, RedisPolicy redisPolicy);
 
-    void removeTagidPolicy(Long tagId, String strategyCode);
+    //删除单个标签下的某个策略缓存,一个标签可能有多个策略缓存
+    void delTagidPolicy(Long tagId, String strategyCode);
 
     List<Strategy> getStrategyByFenceCodes(List<String> fenceCodes);
 
@@ -39,6 +40,4 @@ public interface IStrategyService {
 
     List<Strategy> getStrategyByUserId(String strategyUserId);
 
-
-    void delRedisByKey(String keyPre, Long tagId);
 }

@@ -1,45 +1,51 @@
 package com.zhilutec.services;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.zhilutec.netty.tcpServer.TcpHandler;
-import org.springframework.beans.factory.annotation.Autowired;
+public interface IRedisService {
+
+    /**
+     * 清空当前表
+     */
+    void flushdb();
 
 
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
+    /**
+     * 生成key
+     */
+    String genRedisKey(String keyPre, Object o);
 
 
-import javax.annotation.Resource;
+    void hashAddMap(String key, Map map, Long expire);
 
-import java.util.concurrent.TimeUnit;
+    Map<String, Object> hashGetMap(String key);
 
-public abstract class IRedisService<T> {
-    @Resource
-    HashOperations<String, String, String> hashOperations;
+    /**
+     * 删除
+     *
+     * @param key redis key,string,hash,list,set zset都可以删除
+     */
+    void delete(String key);
 
-    @Resource
-    RedisTemplate<String, String> redisTemplate;
+    void delete(String keyPre, Object o);
 
-    public void flushDb() {
-        redisTemplate.getConnectionFactory().getConnection().flushDb();
-    }
+    void delete(Collection<String> collection);
 
-    public void put(String key, String field, T obj, long expire) {
-        String jsonStr = JSON.toJSON(obj).toString();
-        hashOperations.put(key, field, jsonStr);
-        if (expire != -1L) {
-            redisTemplate.expire(key, expire, TimeUnit.SECONDS);
-        }
-    }
+    /**
+     * 删除指定的hash value
+     *
+     * @param key   redis key
+     * @param field 传入field的名称
+     */
+    Long hashDel(String key, String field);
 
-    public String get(String key, String field) {
-        return hashOperations.get(key, field);
-    }
 
-    public Long remove(String key, String field) {
-        return hashOperations.delete(key, field);
-    }
+    Set<String> keys(String keyPre);
 
+    void delByKeys(String keyPattern);
+
+    void delAll();
 }

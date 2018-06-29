@@ -50,7 +50,8 @@ public interface IDepartmentService {
 
     void addDptCache(Department department);
 
-    void deleteDptCache(Department department);
+    // void deleteDptCache(Department department);
 
     void deleteDptCache(String departmentCode);
+
 }

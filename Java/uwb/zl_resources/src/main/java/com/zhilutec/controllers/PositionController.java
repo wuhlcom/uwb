@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("position")
+@RequestMapping("/position")
 @EnableAutoConfiguration
 public class PositionController {
 
@@ -29,16 +29,5 @@ public class PositionController {
         }
     }
 
-    // @RequestMapping(value = "/test", method = {RequestMethod.GET}, produces = "application/json;charset=UTF-8")
-    // public String test() {
-    //     try {
-    //          positionService.positionCacheInit();
-    //          return  null;
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //         Result rs = Result.error(ResultCode.UNKNOW_ERR.getCode(), "查询职务出现异常");
-    //         return rs.toJSONString();
-    //     }
-    // }
 
 }

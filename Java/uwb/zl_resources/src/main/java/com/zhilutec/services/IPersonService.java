@@ -39,13 +39,8 @@ public interface IPersonService {
     //获取指定部门组下的所有人员
     List<Person> getPersonsByDeparments(String departmentCode);
 
-    void flushdDbData();
-
     @Transactional
     void personCacheInit();
-
-    //key-value将人员tag和名字添加到缓存中
-    void addPersonCache(Long tagId, String personName);
 
     //hash将人员tag和名字添加到缓存中
     void addPersonCache(Long tagId, Person person);

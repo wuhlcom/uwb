@@ -29,8 +29,8 @@
             class="upload-demo"
             ref="upload"
             :limit="1"
-            :data="{name: form.name, type: form.type}"      
-            :action=this.$url.upImg
+            :data="{name: form.name, type: form.type}"
+            action="fastdfs/fdfs/upload"
             :on-success="close"
             :file-list="fileList"
             :on-change="fileStatus"

@@ -221,7 +221,6 @@ import selection from "@/components/selection";
 import AreaShow from "@/components/area-show";
 import PersonnelSelection from "@/components/personnel-selection";
 import TimeLine from '@/components/time-line'
-// import { URL, WEB_SOCKET_URL } from "../../static/js/websocket-url";
 import { accDiv, accSub, accAdd } from "@/assets/js/parseFloat";
 import { mapState } from 'vuex'
 export default {

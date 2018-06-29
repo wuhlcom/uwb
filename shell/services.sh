@@ -47,7 +47,9 @@ ALARM_SAVE=alarm_save
 COORDINATE=coordinate
 COORDINATE_SAVE=coordinate_save
 STATUS_SAVE=status_save
-SERVICES=($PERMISSION $RESOURCES $FASTDFS $PRODUCER $CENTER $ALARM $ALARM_SAVE $COORDINATE $COORDINATE_SAVE $STATUS_SAVE)
+WEBSOCKET=websocket
+STORAGE=storage
+SERVICES=($PERMISSION $RESOURCES $FASTDFS $PRODUCER $CENTER $ALARM $ALARM_SAVE $COORDINATE $COORDINATE_SAVE $STATUS_SAVE $WEBSOCKET $STORAGE)
 USAGE="Usage: $SCRIPTNAME {startOne|stopOne|startParam|start|stop|restart|restartOne}"
 
 SRV_NAME=$2
@@ -198,19 +200,25 @@ startService(){
     else
 	   XMX_VALUE="-Xmx${XMX_OLD}m "	 	 
 	fi
-	
-	if [ ! -f $CONF_PATH ]; then
-        echo "Starting ${SRV_NAME} by default config file ..."	
+
+	if [ -f "${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-uwb-SNAPSHOT.jar" ];then
+	 if [ ! -f $CONF_PATH ]; then
+        echo "Starting ${SRV_NAME} by default config file ..."
 		cmd="${CMD_HEAD}${XMS_VALUE}${XMX_VALUE}${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-uwb-SNAPSHOT.jar${LOG_NULL} &"
 		echo $cmd
         bash -c "${cmd}"
-    elif [ -f $CONF_PATH ]; then
+     elif [ -f $CONF_PATH ]; then
         echo "Starting ${SRV_NAME} with config file ${CONF_PATH} ..."	
 	    cmd="${CMD_HEAD}${XMS_VALUE}${XMX_VALUE}-Dspring.config.location=${CONF_PATH} ${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar${LOG_NULL} &"
 		echo $cmd
 	    bash -c "${cmd}"
-    fi	 
-    sleep ${SLEEP}	
+     fi
+	 sleep ${SLEEP}	
+    else
+      echo "server \'$SRV_NAME\' not existed!"	     
+	fi
+	
+ 
 }
 
 startOne(){  

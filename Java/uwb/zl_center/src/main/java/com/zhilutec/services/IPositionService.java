@@ -1,11 +1,11 @@
 package com.zhilutec.services;
 
 
+import com.zhilutec.dbs.entities.Position;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public interface IPositionService {
-
-    String redisGet(String keyPre, String positionCode);
+    Position getCache(String levelCode);
 }

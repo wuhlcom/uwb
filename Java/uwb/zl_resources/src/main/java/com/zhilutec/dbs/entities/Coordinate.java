@@ -4,7 +4,6 @@ import javax.persistence.Table;
 
 @Table(name="uwb_coordinates")
 public class Coordinate extends Base {
-    private static final long serialVersionUID = 1L;
     private Double posX; // decimal(12,8) NOT NULL COMMENT 'x坐标', '坐标产生时间',
     private Double posY; // decimal(12,8) NOT NULL COMMENT 'y坐标',
     private Double posZ; // decimal(12,8) NOT NULL COMMENT 'z坐标',
@@ -22,10 +21,6 @@ public class Coordinate extends Base {
     private String fenceName;
     private String fenceCode;
     private Integer op;
-
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
 
     public Double getPosX() {
         return posX;

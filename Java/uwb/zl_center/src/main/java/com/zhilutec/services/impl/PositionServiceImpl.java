@@ -1,21 +1,34 @@
 package com.zhilutec.services.impl;
 
+import com.alibaba.fastjson.JSONObject;
+import com.zhilutec.common.utils.ConstantUtil;
+import com.zhilutec.dbs.entities.Position;
 import com.zhilutec.services.IPositionService;
-import com.zhilutec.services.IRedisTService;
+import com.zhilutec.services.IRedisService;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.Map;
+
 @Service("positionServiceImpl")
-public class PositionServiceImpl extends IRedisTService<String> implements IPositionService {
+public class PositionServiceImpl implements IPositionService {
+    @Resource
+    IRedisService redisService;
 
     @Override
-    protected String getRedisKey(String keyPre, Object obj) {
-        return keyPre + ":" + obj.toString();
-    }
+    public Position getCache(String positionCode) {
+        Position position = null;
 
-    @Override
-    public String redisGet(String keyPre, String positionCode) {
-        String key = this.getRedisKey(keyPre, positionCode);
-        return this.getValue(key);
-    }
+        String key = redisService.genRedisKey(ConstantUtil.POSITION_KEY_PRE, positionCode);
+        Map map = redisService.hashGetMap(key);
 
+
+        if(map==null){
+            return position;
+        }
+        String mapStr=JSONObject.toJSONString(map);
+
+        position = JSONObject.parseObject(mapStr, Position.class);
+        return position;
+    }
 }

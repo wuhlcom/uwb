@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.result.ResultCode;
 import com.zhilutec.services.ICoordinateService;
-import com.zhilutec.services.IWarningService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 
 @RestController

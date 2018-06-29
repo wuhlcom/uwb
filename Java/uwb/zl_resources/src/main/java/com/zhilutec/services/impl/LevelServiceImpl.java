@@ -5,12 +5,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.dbs.daos.LevelDao;
-import com.zhilutec.dbs.entities.Fence;
 import com.zhilutec.dbs.entities.Level;
 import com.zhilutec.dbs.entities.Position;
 import com.zhilutec.services.ILevelService;
 import com.zhilutec.services.IPositionService;
-import com.zhilutec.services.IRedisTService;
+import com.zhilutec.services.IRedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
@@ -21,13 +20,16 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class LevelServiceImpl extends IRedisTService<String> implements ILevelService {
+public class LevelServiceImpl implements ILevelService {
 
     @Autowired
     LevelDao levelDao;
 
     @Resource
     IPositionService positionService;
+
+    @Resource
+    IRedisService redisService;
 
     @Override
     public void levelCacheInit() {
@@ -36,9 +38,11 @@ public class LevelServiceImpl extends IRedisTService<String> implements ILevelSe
         criteria.andEqualTo("isdel", 1);
         List<Level> levels = levelDao.selectByExample(example);
         for (Level level : levels) {
-            String levelCode = level.getLevelCode();
+
             //将级别添加到缓存中
-            this.redisAdd(ConstantUtil.LEVEL_KEY_PRE, levelCode, JSON.toJSONString(level));
+            // String levelCode = level.getLevelCode();
+            // this.redisAdd(ConstantUtil.LEVEL_KEY_PRE, levelCode, JSON.toJSONString(level));
+            this.addLevelCache(level);
         }
     }
 
@@ -84,15 +88,13 @@ public class LevelServiceImpl extends IRedisTService<String> implements ILevelSe
         return Result.ok(resultMap).toJSONString();
     }
 
-
-    @Override
-    protected String getRedisKey(String keyPre, Object obj) {
-        return keyPre + ":" + obj.toString();
-    }
-
-    @Override
-    public void redisAdd(String keyPre, String leveCode, String obj) {
-        String key = this.getRedisKey(keyPre, leveCode);
-        this.set(key, obj, ConstantUtil.REDIS_DEFAULT_TTL);
+    private void addLevelCache(Level level) {
+        String levelCode = level.getLevelCode();
+        //将区域添加到缓存中
+        String keyPre = ConstantUtil.LEVEL_KEY_PRE;
+        String key = redisService.genRedisKey(keyPre, levelCode);
+        String str = JSON.toJSONString(level);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 }

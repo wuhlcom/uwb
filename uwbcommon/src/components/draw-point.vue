@@ -62,25 +62,27 @@ export default {
           if (e.show){
             let lucency = 0
             e.point.forEach(el => {
-              ctx.beginPath()
-              ctx.arc(el.x * this.proportionWith, el.y * this.proportionHeight, 5, 0, Math.PI * 2)
-              if (e.point.length === 1){
-                lucency = 1
-              } else {
-                lucency+=(1/e.point.length)
+              if (el) {
+                ctx.beginPath()
+                ctx.arc(el.x * this.proportionWith, el.y * this.proportionHeight, 5, 0, Math.PI * 2)
+                if (e.point.length === 1){
+                  lucency = 1
+                } else {
+                  lucency+=(1/e.point.length)
+                }
+                if(el.type == 2 || !this.statusShow) {
+                  ctx.fillStyle = 'rgba(0,255,0,'+lucency+')'
+                  ctx.fill()
+                  ctx.strokeStyle = 'rgba(0,255,0,'+lucency+')'
+                  ctx.stroke()
+                } else if (this.statusShow) {
+                  ctx.fillStyle = 'rgba(255,0,0,'+lucency+')'
+                  ctx.fill()
+                  ctx.strokeStyle = 'rgba(255,0,0,'+lucency+')'
+                  ctx.stroke()
+                }
+                ctx.closePath()
               }
-              if(el.type == 2 || !this.statusShow) {
-                ctx.fillStyle = 'rgba(0,255,0,'+lucency+')'
-                ctx.fill()
-                ctx.strokeStyle = 'rgba(0,255,0,'+lucency+')'
-                ctx.stroke()
-              } else if (this.statusShow) {
-                ctx.fillStyle = 'rgba(255,0,0,'+lucency+')'
-                ctx.fill()
-                ctx.strokeStyle = 'rgba(255,0,0,'+lucency+')'
-                ctx.stroke()
-              }
-              ctx.closePath()
             })
             if (this.nameShow) {
               ctx.beginPath()

@@ -1,15 +1,11 @@
 package com.zhilutec.dbs.entities;
 
 
-import com.alibaba.fastjson.JSONObject;
-
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Table(name = "uwb_warnings")
 public class Warning extends Base {
-
-    private static final long serialVersionUID = 1L;
 
     private Double posX; // decimal(12,8) NOT NULL COMMENT 'x坐标', '坐标产生时间',
     private Double posY; // decimal(12,8) NOT NULL COMMENT 'y坐标',
@@ -43,32 +39,6 @@ public class Warning extends Base {
         this.remark = remark;
     }
 
-    @Override
-    public String toString() {
-        return "Warning{" +
-                "posX=" + posX +
-                ", posY=" + posY +
-                ", posZ=" + posZ +
-                ", timestamp=" + timestamp +
-                ", type=" + type +
-                ", level=" + level +
-                ", msg='" + msg + '\'' +
-                ", tagId=" + tagId +
-                ", personCode='" + personCode + '\'' +
-                ", personName='" + personName + '\'' +
-                ", strategyName='" + strategyName + '\'' +
-                ", strategyCode='" + strategyCode + '\'' +
-                ", departmentName='" + departmentName + '\'' +
-                ", departmentCode='" + departmentCode + '\'' +
-                ", fenceName='" + fenceName + '\'' +
-                ", fenceCode='" + fenceCode + '\'' +
-                ", op=" + op +
-                ", status=" + status +
-                ", remark='" + remark + '\'' +
-                ", finishTime=" + finishTime +
-                '}';
-    }
-
     public Long getFinishTime() {
         return finishTime;
     }
@@ -85,9 +55,6 @@ public class Warning extends Base {
         this.status = status;
     }
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
 
     public Double getPosX() {
         return posX;
@@ -224,18 +191,31 @@ public class Warning extends Base {
     public void setFenceCode(String fenceCode) {
         this.fenceCode = fenceCode;
     }
-
-    public String toJsonString() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("timestamp", timestamp);
-        jsonObject.put("tagId", tagId);
-        jsonObject.put("type", type);
-        jsonObject.put("level", level);
-        jsonObject.put("msg", msg);
-        jsonObject.put("personName", personName);
-        jsonObject.put("timestamp", timestamp);
-        jsonObject.put("strategyCode", strategyCode);
-        return jsonObject.toJSONString();
+    
+    @Override
+    public String toString() {
+        return "Warning{" +
+                "posX=" + posX +
+                ", posY=" + posY +
+                ", posZ=" + posZ +
+                ", timestamp=" + timestamp +
+                ", type=" + type +
+                ", level=" + level +
+                ", msg='" + msg + '\'' +
+                ", tagId=" + tagId +
+                ", personCode='" + personCode + '\'' +
+                ", personName='" + personName + '\'' +
+                ", strategyName='" + strategyName + '\'' +
+                ", strategyCode='" + strategyCode + '\'' +
+                ", departmentName='" + departmentName + '\'' +
+                ", departmentCode='" + departmentCode + '\'' +
+                ", fenceName='" + fenceName + '\'' +
+                ", fenceCode='" + fenceCode + '\'' +
+                ", op=" + op +
+                ", status=" + status +
+                ", remark='" + remark + '\'' +
+                ", finishTime=" + finishTime +
+                '}';
     }
 
 }

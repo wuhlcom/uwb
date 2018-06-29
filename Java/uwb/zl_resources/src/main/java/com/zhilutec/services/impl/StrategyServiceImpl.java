@@ -24,7 +24,7 @@ import java.text.ParseException;
 import java.util.*;
 
 @Service
-public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements IStrategyService {
+public class StrategyServiceImpl implements IStrategyService {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
@@ -42,8 +42,11 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
     @Resource
     IWarningService warningService;
 
+    // @Resource
+    // IRedisPolicyService redisPolicyService;
+
     @Resource
-    IRedisPolicyService redisPolicyService;
+    IRedisService redisService;
 
     //初始化策略缓存
     @Override
@@ -72,7 +75,7 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
                 logger.warn("=============找不到策略对应的区域!==================");
                 return;
             }
-            this.updateRedisCache(strategy, timeValues);
+            this.addStrategyCache(strategy, timeValues);
         }
     }
 
@@ -114,7 +117,7 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
         if (insert > 0) {
             Integer available = strategy.getAvailable();
             if (available == 1) {
-                this.updateRedisCache(strategy, timeValues);
+                this.addStrategyCache(strategy, timeValues);
             }
             return Result.ok("配置策略成功").toJSONString();
         } else {
@@ -217,15 +220,6 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
                 strategy.setStrategyUser(department.getDepartmentName());
             }
 
-            //刷新策略缓存,调试用,后期要关闭以名影响性能
-            // Integer available = strategy.getAvailable();
-            // if (available == 1) {
-            //     String fenceCode = strategy.getFenceCode();
-            //     Fence fence = fenceService.getFenceByCode(fenceCode);
-            //     if (fence == null)
-            //         return Result.error(ResultCode.REPETITION_ERR.getCode(), "策略对应的区域不存在").toJSONString();
-            //     this.updateRedisCache(strategy, timeValues);
-            // }
         }
 
         rsMap.put("result", strategies);
@@ -234,8 +228,8 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
     }
 
 
-    //更新策略缓存
-    private void updateRedisCache(Strategy strategy, List timeValues) {
+    //更新策略缓存,将策略属性简化
+    private void addStrategyCache(Strategy strategy, List timeValues) {
         RedisPolicy redisPolicy = new RedisPolicy();
         redisPolicy.setStrategyUserId(strategy.getStrategyUserId());
         redisPolicy.setStrategyName(strategy.getStrategyName());
@@ -249,8 +243,9 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
         redisPolicy.setTimeType(strategy.getTimeType());
         redisPolicy.setUserType(strategy.getUserType());
         redisPolicy.setAvailable(strategy.getAvailable());
-        //添加redis
-        this.redisCacheAdd(redisPolicy);
+
+        //添加redis缓存
+        this.addPolicyCache(redisPolicy);
     }
 
 
@@ -300,13 +295,13 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
             if (strategy.getAvailable() == 0) {
                 //关闭策略
                 //先删除策略再删除报警注意顺序
-                this.deletePolicyCache(strategyOld);
-                warningService.deleteWarningCache(strategyOld);
+                this.delPolicyCache(strategyOld);
+                warningService.delWarningCache(strategyOld);
                 return Result.ok("关闭策略成功").toJSONString();
             } else {
                 //打开策略
                 List<String> timeValues = Arrays.asList(strategyOld.getTimeValue().split(","));
-                this.updateRedisCache(strategyOld, timeValues);
+                this.addStrategyCache(strategyOld, timeValues);
                 return Result.ok("启用策略成功").toJSONString();
             }
         } else {
@@ -372,11 +367,11 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
             List<String> updateTimeValues = Arrays.asList(updateTimeValue.split(","));
             if (availableUpdate == 1) {
                 //刷新策略缓存
-                this.deletePolicyCache(strategyOld);
-                this.updateRedisCache(strategyUpdate, updateTimeValues);
+                this.delPolicyCache(strategyOld);
+                this.addStrategyCache(strategyUpdate, updateTimeValues);
             } else {
                 //删除缓存
-                this.deletePolicyCache(strategyOld);
+                this.delPolicyCache(strategyOld);
             }
 
             //处理报警
@@ -420,18 +415,18 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
         boolean isChanged = (isAvailable && isFenceCode && isFinishTime && isStartTime && isStrategyUserId && isLevel && isTimeValues && isForbidden);
         //策略关键配置变化要删除旧的报警
         if (!isChanged) {
-            warningService.deleteWarningCache(strategyOld);
+            warningService.delWarningCache(strategyOld);
         }
     }
 
 
     //删除策略缓存
-    private void deletePolicyCache(Strategy strategyOld) {
+    private void delPolicyCache(Strategy strategyOld) {
         RedisPolicy redisPolicy = new RedisPolicy();
         redisPolicy.setStrategyCode(strategyOld.getStrategyCode());
         redisPolicy.setUserType(strategyOld.getUserType());
         redisPolicy.setStrategyUserId(strategyOld.getStrategyUserId());
-        this.redisPolicyDel(redisPolicy);
+        this.delPolicy(redisPolicy);
     }
 
     //update param check
@@ -485,9 +480,9 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
                 for (Object strategyCode : delStrategies) {
                     Strategy strategyOld = this.getDelStrategyByCode(strategyCode.toString());
                     //删除策略缓存
-                    this.deletePolicyCache(strategyOld);
+                    this.delPolicyCache(strategyOld);
                     //删除报警缓存
-                    warningService.deleteWarningCache(strategyOld);
+                    warningService.delWarningCache(strategyOld);
                 }
                 return Result.ok("删除策略成功").toJSONString();
             } else {
@@ -521,17 +516,16 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
             if (rs > 0) {
                 for (Strategy policy : strategies) {
                     //删除策略缓存
-                    this.deletePolicyCache(policy);
+                    this.delPolicyCache(policy);
                     //删除报警缓存
-                    warningService.deleteWarningCache(policy);
+                    warningService.delWarningCache(policy);
                 }
             }
         }
     }
 
-    //展开策略缓存
-    //使用tagId为key,strategyCode作为field
-    private void redisCacheAdd(RedisPolicy redisPolicy) {
+    //将策略缓存起来
+    private void addPolicyCache(RedisPolicy redisPolicy) {
         Integer userType = redisPolicy.getUserType();
         String userId = redisPolicy.getStrategyUserId();
         String strategyCode = redisPolicy.getStrategyCode();
@@ -558,15 +552,14 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
         }
     }
 
-
-    //删除指定策略的策略缓存
-    private void redisPolicyDel(RedisPolicy redisPolicy) {
+    //删除指定策略编号的策略缓存
+    private void delPolicy(RedisPolicy redisPolicy) {
         Integer type = redisPolicy.getUserType();
         String userId = redisPolicy.getStrategyUserId();
         String strategyCode = redisPolicy.getStrategyCode();
         if (type == 0) {
             Person person = personService.getPersonById(Long.valueOf(userId));
-            removeTagidPolicy(person.getTagId(), strategyCode);
+            delTagidPolicy(person.getTagId(), strategyCode);
         } else if (type == 1) {
             //获取部门信息
             Department department = departmentService.getDepartmentByCode(userId);
@@ -576,7 +569,7 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
                 for (Person person : persons) {
                     Long tagId = person.getTagId();
                     if (tagId != null) {
-                        this.removeTagidPolicy(tagId, strategyCode);
+                        this.delTagidPolicy(tagId, strategyCode);
                     }
                 }
             }
@@ -586,20 +579,15 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
     //添加单个标签下的策略缓存
     @Override
     public void addTagidPolicy(Long tagId, String strategyCode, RedisPolicy redisPolicy) {
-        String key = this.genIdKey(ConstantUtil.POLICY_KEY_PRE, tagId);
-        this.put(key, strategyCode, redisPolicy, ConstantUtil.REDIS_DEFAULT_TTL);
-        // RedisPolicy redisPolicy1 = this.getReidsPolicy(key,strategyCode);
-        // System.out.println(redisPolicy1);
+        String key = redisService.genRedisKey(ConstantUtil.POLICY_KEY_PRE, tagId);
+        redisService.hashAdd(key, strategyCode, redisPolicy, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 
     //删除单个标签下的某个策略缓存,一个标签可能有多个策略缓存
     @Override
-    public void removeTagidPolicy(Long tagId, String strategyCode) {
-        String key = this.genIdKey(ConstantUtil.POLICY_KEY_PRE, tagId);
-        Long del = this.remove(key, strategyCode);
-        if (del == null) {
-            logger.info("删除TAGID " + tagId + " 策略失败");
-        }
+    public void delTagidPolicy(Long tagId, String strategyCode) {
+        String key = redisService.genRedisKey(ConstantUtil.POLICY_KEY_PRE, tagId);
+        redisService.hashDel(key, strategyCode);
     }
 
     //根据围栏查询策略
@@ -633,26 +621,4 @@ public class StrategyServiceImpl extends IRedisService<RedisPolicy> implements I
     }
 
 
-    @Override
-    public void delRedisByKey(String keyPre, Long tagId) {
-        String key = keyPre + ":" + Long.toString(tagId);
-        this.delete(key);
-    }
-
-
-    private List<RedisPolicy> getRedisPolicies(Long tagId) {
-        String key = ConstantUtil.POLICY_KEY_PRE + ":" + Long.toString(tagId);
-        return this.getAll(key);
-    }
-
-    private RedisPolicy getReidsPolicy(String strategyKey, String strategyCode) {
-        // System.out.println("redis hget 策略key 为 " + strategyKey);
-        // System.out.println("redis hget 策略field 为 " + strategyCode);
-        return this.get(strategyKey, strategyCode);
-    }
-
-    @Override
-    protected String getRedisKey() {
-        return null;
-    }
 }

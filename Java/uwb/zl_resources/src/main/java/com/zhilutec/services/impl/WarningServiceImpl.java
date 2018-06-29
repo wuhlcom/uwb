@@ -1,7 +1,6 @@
 package com.zhilutec.services.impl;
 
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -10,7 +9,6 @@ import com.zhilutec.common.result.ResultCode;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.common.utils.ZlTimeUtil;
 import com.zhilutec.common.validators.WarningValidator;
-
 import com.zhilutec.dbs.daos.WarningDao;
 import com.zhilutec.dbs.entities.Department;
 import com.zhilutec.dbs.entities.Person;
@@ -19,7 +17,10 @@ import com.zhilutec.dbs.entities.Warning;
 import com.zhilutec.dbs.pojos.PersonListRs;
 import com.zhilutec.dbs.pojos.WarningLevelRs;
 import com.zhilutec.dbs.pojos.WarningRs;
-import com.zhilutec.services.*;
+import com.zhilutec.services.IDepartmentService;
+import com.zhilutec.services.IPersonService;
+import com.zhilutec.services.IRedisService;
+import com.zhilutec.services.IWarningService;
 import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
-public class WarningServiceImpl extends IRedisService<Warning> implements IWarningService {
+public class WarningServiceImpl implements IWarningService {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -44,50 +48,8 @@ public class WarningServiceImpl extends IRedisService<Warning> implements IWarni
     @Resource
     IDepartmentService departmentService;
 
-    @Override
-    public List<Warning> getRedisWarnings(String key) {
-        return this.getAll(key);
-    }
-
-    /**
-     * @param key   tagId+strategyCode
-     * @param field level
-     */
-    @Override
-    public Warning getReidsWarning(String key, String field) {
-        return this.get(key, field);
-    }
-
-
-    @Override
-    public void putRedisWarning(String key, String field, Warning warning, long expire) {
-        this.put(key, field, warning, expire);
-    }
-
-    @Override
-    public List<Warning> getRedisWarningList(String keyPre, Long tagId) {
-        String warningKey = keyPre + ":" + Long.toString(tagId);
-        return this.listAll(warningKey);
-    }
-
-    @Override
-    public List<String> getRedisStrList(String keyPre, Long tagId) {
-        String warningKey = keyPre + ":" + Long.toString(tagId);
-        return this.listStr(warningKey);
-    }
-
-
-    @Override
-    protected String getRedisKey() {
-        return null;
-    }
-
-    //删除某个tag下的所有报警
-    @Override
-    public void delRedisByKey(String keyPre, Long tagId) {
-        String warningKey = keyPre + ":" + Long.toString(tagId);
-        this.delete(warningKey);
-    }
+    @Resource
+    IRedisService redisService;
 
     @Override
     public String warnings(JSONObject jsonObject) {
@@ -278,58 +240,10 @@ public class WarningServiceImpl extends IRedisService<Warning> implements IWarni
         }
     }
 
-    //删除策略对应的报警,未变化的策略报警不要删除
-    //首先取出所有报警,找到匹配的围栏,删除，其它报警要保留
-    //区分组策略和单用户策略
-    @Override
-    public void deleteWarningCache(Strategy strategyOld) {
-        String uid = strategyOld.getStrategyUserId();
-        String strategyCode = strategyOld.getStrategyCode();
-        Integer userType = strategyOld.getUserType();
-        if (userType == 0) {
-            Person person = personService.getPersonById(Long.valueOf(uid));
-            Long tagId = person.getTagId();
-            if (tagId != null) {
-                this.deleteRedisWarning(strategyCode, tagId, ConstantUtil.FENCE_ALARM_KEY_PRE);
-            }
-        } else if (userType == 1) {
-            Department department = departmentService.getDepartmentByCode(uid);
-            //获取部门及子部门下的人员
-            List<Person> persons = personService.getPersonsByDeparments(department.getDepartmentCode());
-            if (persons != null && persons.size() > 0) {
-                for (Person person : persons) {
-                    Long tagId = person.getTagId();
-                    if (tagId != null) {
-                        this.deleteRedisWarning(strategyCode, tagId, ConstantUtil.FENCE_ALARM_KEY_PRE);
-                    }
-                }
-            }
-        }
-    }
 
-    @Override
-    public void deleteRedisWarningStr(String keyPre, Long tagId, String warningStr) {
-        String warningKey = keyPre + ":" + Long.toString(tagId);
-        Long rs = this.remove(warningKey, 0L, warningStr);
-        if (rs == null) {
-            logger.info("删除Redis List中的报警失败");
-        }
-    }
-
-    private void deleteRedisWarning(String strategyCode, Long tagId, String warningKeyPre) {
-        List<String> warnings = this.getRedisStrList(warningKeyPre, tagId);
-        for (String redisWarningStr : warnings) {
-            JSONObject redisWarning = JSON.parseObject(redisWarningStr);
-            Long redisTagId = redisWarning.getLong("tagId");
-            String redisCode = redisWarning.getString("strategyCode");
-            if (tagId.longValue() == redisTagId.longValue() && strategyCode.equals(redisCode)) {
-                this.deleteRedisWarningStr(warningKeyPre, redisTagId, redisWarningStr);
-            }
-        }
-    }
-
-
-    /**未处理报警数量统计*/
+    /**
+     * 未处理报警数量统计
+     */
     @Override
     public String getWarningAmount() {
         Map<String, Integer> rsMap = new HashMap<>();
@@ -341,5 +255,43 @@ public class WarningServiceImpl extends IRedisService<Warning> implements IWarni
         return Result.ok(rsMap).toJSONString();
     }
 
+
+    /**
+     * 删除策略对应的报警,未变化的策略报警不要删除
+     * 根据key和field来删除，field值为策略编号
+     * 区分组策略和单用户策略
+     */
+    @Override
+    public void delWarningCache(Strategy strategyOld) {
+        String uid = strategyOld.getStrategyUserId();
+        String strategyCode = strategyOld.getStrategyCode();
+        Integer userType = strategyOld.getUserType();
+        if (userType == 0) {
+            Person person = personService.getPersonById(Long.valueOf(uid));
+            Long tagId = person.getTagId();
+            if (tagId != null) {
+                this.delRedisWarning(strategyCode, tagId, ConstantUtil.FENCE_ALARM_KEY_PRE);
+            }
+        } else if (userType == 1) {
+            Department department = departmentService.getDepartmentByCode(uid);
+            //获取部门及子部门下的人员
+            List<Person> persons = personService.getPersonsByDeparments(department.getDepartmentCode());
+            if (persons != null && persons.size() > 0) {
+                for (Person person : persons) {
+                    Long tagId = person.getTagId();
+                    if (tagId != null) {
+                        this.delRedisWarning(strategyCode, tagId, ConstantUtil.FENCE_ALARM_KEY_PRE);
+                    }
+                }
+            }
+        }
+    }
+
+
+    //删除单个报警缓存
+    private Long delRedisWarning(String strategyCode, Long tagId, String warningKeyPre) {
+        String key = redisService.genRedisKey(warningKeyPre, tagId);
+        return redisService.hashDel(key, strategyCode);
+    }
 
 }

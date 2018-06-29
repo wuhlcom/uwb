@@ -267,12 +267,12 @@ export default {
       if (window.location.port === '9999') {
         return 'ws://192.168.10.232:80/alarm/alarms';
       }
-      return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/alarm/alarms'
+      return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/uwb/websocket/wsmsg'
     },
     webSowcket() {
       let ws = new WebSocket(this.getWebSocketURL())
       ws.onopen = () => {
-        ws.send('{"type":1}')
+        ws.send('{"type":2}')
       };
       ws.onmessage = msg => {
         let data = JSON.parse(msg.data).result

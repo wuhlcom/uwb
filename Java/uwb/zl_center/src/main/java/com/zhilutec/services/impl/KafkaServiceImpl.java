@@ -67,6 +67,9 @@ public class KafkaServiceImpl implements IKafkaService {
     ICoordinateService coordinateService;
 
     @Resource
+    IRedisService redisService;
+
+    @Resource
     protected HashOperations<String, String, Integer> hashOperations;
 
     /**
@@ -78,7 +81,7 @@ public class KafkaServiceImpl implements IKafkaService {
         //从坐标消息中，获取策略key
         Long tagId = coordinate.getTagId();
         //找不到消息对应人员则不拼装消息
-        Person person = personService.getPerson(tagId);
+        Person person = personService.getCache(tagId);
         if (person == null) {
             resultMap = null;
             return resultMap;
@@ -102,13 +105,6 @@ public class KafkaServiceImpl implements IKafkaService {
         // List<RedisPolicy> redisPolicies = strategyService.getRedisPolicies(tagId);
 
         //当redisPolicies为null再查询一次
-        // if (redisPolicies == null) {
-        //     Long gap = 5L;
-        //     Thread.sleep(gap);
-        //     redisPolicies = strategyService.getRedisPolicies(tagId);
-        //     logger.info("sleep " + gap + " ms 后获取到策略:" + redisPolicies);
-        // }
-
         //调取策略缓存
         int i = 1;
         List<RedisPolicy> redisPolicies = new ArrayList<>();
@@ -118,7 +114,7 @@ public class KafkaServiceImpl implements IKafkaService {
                 Long gap = 5L;
                 Thread.sleep(gap);
                 redisPolicies = strategyService.getRedisPolicies(tagId);
-                logger.info("sleep " + gap * i + " ms 后获取到策略:" + redisPolicies);
+                // logger.info("sleep " + gap * i + " ms 后获取到围栏策略:" + redisPolicies);
             } else {
                 break;
             }
@@ -143,14 +139,22 @@ public class KafkaServiceImpl implements IKafkaService {
     private void setLevelType(Coordinate coordinate, Long tagId) {
         //处理消息的level和type,消息的type与报警类型有关,多个报警类型只取级别高的报警值来设置type
         Integer level = coordinate.getLevel();
-        String powerAlarm = statusService.redisGet(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
-        String heartAlarm = statusService.redisGet(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
-        String wristAlarm = statusService.redisGet(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
-        String sosAlarm = statusService.redisGet(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
+
+        // Map heartAlarmMap = redisService.hashGetMap(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
+        Warning heartAlarm = warningService.getCache(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
+
+        // Map powerAlarmMap = redisService.hashGetMap(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
+        Warning powerAlarm =warningService.getCache(ConstantUtil.POWER_ALARM_KEY_PRE,tagId);
+
+        // Map wristAlarmMap = redisService.hashGetMap(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
+        Warning wristAlarm = warningService.getCache(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
+
+        // Map sosAlarmMap = redisService.hashGetMap(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
+        Warning sosAlarm = warningService.getCache(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
+
         if (level == null || level != ConstantUtil.ALARM_URGEN.intValue()) {
             if (heartAlarm != null) {
-                Warning heartWarning = JSONObject.parseObject(heartAlarm, Warning.class);
-                Integer heartLevel = heartWarning.getLevel();
+                Integer heartLevel = heartAlarm.getLevel();
                 if (heartLevel != null) {
                     if (level == null) {
                         coordinate.setLevel(heartLevel);
@@ -161,8 +165,7 @@ public class KafkaServiceImpl implements IKafkaService {
                     }
                 }
             } else if (powerAlarm != null) {
-                Warning powerWarning = JSONObject.parseObject(powerAlarm, Warning.class);
-                Integer powerLevel = powerWarning.getLevel();
+                Integer powerLevel = powerAlarm.getLevel();
                 level = coordinate.getLevel();
                 if (powerLevel != null) {
                     if (level == null) {
@@ -174,8 +177,7 @@ public class KafkaServiceImpl implements IKafkaService {
                     }
                 }
             } else if (wristAlarm != null) {
-                Warning wristWarning = JSONObject.parseObject(wristAlarm, Warning.class);
-                Integer wristLevel = wristWarning.getLevel();
+                Integer wristLevel = wristAlarm.getLevel();
                 level = coordinate.getLevel();
                 if (wristLevel != null) {
                     if (level == null) {
@@ -187,8 +189,7 @@ public class KafkaServiceImpl implements IKafkaService {
                     }
                 }
             } else if (sosAlarm != null) {
-                Warning sosWarning = JSONObject.parseObject(sosAlarm, Warning.class);
-                Integer sosLevel = sosWarning.getLevel();
+                Integer sosLevel = sosAlarm.getLevel();
                 level = coordinate.getLevel();
                 if (sosLevel != null) {
                     if (level == null) {
@@ -205,9 +206,8 @@ public class KafkaServiceImpl implements IKafkaService {
 
     //设置状态值到坐标消息
     private void setStatus(Coordinate coordinate, Long tagId) {
-        String statusStr = statusService.redisGet(ConstantUtil.STATUS_KEY_PRE, tagId);
-        Status status = JSONObject.parseObject(statusStr, Status.class);
-        if (statusStr != null && !statusStr.isEmpty()) {
+        Status status = statusService.getCache(tagId);
+        if (status != null) {
             coordinate.setPower(status.getPower());
             coordinate.setHeartRate(status.getHeart());
         }
@@ -217,7 +217,8 @@ public class KafkaServiceImpl implements IKafkaService {
     private Warning handleCoordinate(Coordinate coordinate, Long tagId, Integer currWeek, Time currTime, RedisPolicy redisPolicy) {
         Warning warning = null;
         String fenceCode = redisPolicy.getFenceCode();
-        Fence redisfence = fenceService.getFence(fenceCode);
+        Fence redisfence = fenceService.getCache(fenceCode);
+        // logger.info("====策略对应的区域为:{}", redisfence.toString());
         if (redisfence == null)
             return null;
 
@@ -238,6 +239,7 @@ public class KafkaServiceImpl implements IKafkaService {
         if (isTimeBetween != null && isTimeBetween && isWeekIn) {
             //从缓存中获取坐标
             String points = redisfence.getPoints();
+            logger.info("===策略对应的围栏区域各个点的值:{}", points);
             //设置当前围栏名
             coordinate.setFenceName(redisfence.getFenceName());
             coordinate.setFenceCode(redisfence.getFenceCode());
@@ -258,15 +260,18 @@ public class KafkaServiceImpl implements IKafkaService {
                     Integer level = redisPolicy.getLevel();
                     coordinate.setLevel(level);
                     //获取历史报警
-                    List<String> warningLsOld = (List<String>) warningService.getRedisStrList(tagId);
+                    List<Warning> warningLsOld = warningService.getFenceWarnings(tagId);
                     if (isIn) {
                         //点在围栏中
+                        logger.info("==点在区域:{}-内==",redisfence.getFenceName());
                         //forbidden 0 禁止进入
                         if (forbiddenValue == inValue) {
+                            logger.info("==点在区域:{}-内={}",redisfence.getFenceName(),"不符合策略");
                             //不符合策略，查看是否之前有过相同报警，有则不添加报警，无则添加报警，并缓存报警,并在坐标添加报警状态
                             String warningMsg = ConstantUtil.FENCE_ENTER + redisfence.getFenceName();
                             warning = this.createfenceAlarm(warningMsg, warningLsOld, coordinate);
                         } else if (forbiddenValue == outValue) {
+                            logger.info("==点在区域:{}-内={}",redisfence.getFenceName(),"符合策略");
                             //forbidden 1 禁止进出
                             //符合策略,查看是否有旧报警,有旧报警,解除报警
                             if (warningLsOld != null && warningLsOld.size() > 0) {
@@ -274,14 +279,17 @@ public class KafkaServiceImpl implements IKafkaService {
                             }
                         }
                     } else {
+                        logger.info("==点在区域:{}-外==",redisfence.getFenceName());
                         //点在围栏外
                         //forbidden 0 禁止进入
                         if (forbiddenValue == inValue) {
+                            logger.info("==点在区域:{}-外={}",redisfence.getFenceName(),"符合策略");
                             //符合策略,查看是否有旧报警,有旧报警,解除报警
                             if (warningLsOld != null && warningLsOld.size() > 0) {
                                 warning = this.cancelFenceAlarm(coordinate, warningLsOld);
                             }
                         } else if (forbiddenValue == outValue) {
+                            logger.info("==点在区域:{}-外={}",redisfence.getFenceName(),"不符合策略");
                             //forbidden 1 禁止进出
                             //不符合策略，查看是否之前有过相同报警，有则不添加报警，无则添加报警，并缓存报警,并在坐标添加报警状态
                             String warningMsg = ConstantUtil.FENCE_LEAVE + redisfence.getFenceName();
@@ -318,7 +326,7 @@ public class KafkaServiceImpl implements IKafkaService {
                 }
             } else if (type == ConstantUtil.ENGINE_ARLARM) {
                 //兼容定位引擎直接上报的报警
-                this.handleAlarm(coordinates, warnings, msgObj);
+                // this.handleAlarm(coordinates, warnings, msgObj);
             } else if (type == ConstantUtil.ENGINE_STATUS) {
                 //处理状态消息
                 List<Warning> statusWarnings = this.handleStatus(msgObj);
@@ -348,61 +356,18 @@ public class KafkaServiceImpl implements IKafkaService {
     }
 
 
-    //处理直接报警
-    private void handleAlarm(List<Coordinate> coordinates, List<Warning> warnings, JSONObject msgObj) {
-        Long tagId = msgObj.getLong("tag_id");
-        Integer op = msgObj.getInteger("op");
-        //获取历史报警列表
-        List<Warning> warningLsOld = (List<Warning>) warningService.getRedisWarningList(tagId);
-        if (op.intValue() == 1) {
-            Coordinate coordinate = coordinateService.getReidsCoordinate(tagId);
-            if (coordinate != null) {
-                this.setCoordinate(coordinate, msgObj);
-                coordinates.add(coordinate);
-                Warning warning = this.createWarning(coordinate.getPersonName(), msgObj, warningLsOld);
-                if (warning != null)
-                    warnings.add(warning);
-            } else {
-                //找不到历史坐标消息就只发送报警
-                Person person = personService.getPerson(tagId);
-                if (person != null) {
-                    Warning warning = this.createWarning(person.getPersonName(), msgObj, warningLsOld);
-                    if (warning != null)
-                        warnings.add(warning);
-                }
-            }
-        } else {
-            //收到取消报警时删除缓存中报警
-            Integer warningType = msgObj.getInteger("warning_type");
-            for (Warning warning : warningLsOld) {
-                Long redisTagId = warning.getTagId();
-                Integer redisType = warning.getType();
-                if (tagId.longValue() == redisTagId.longValue() && warningType.intValue() == redisType.intValue()) {
-                    //删除旧报警缓存
-                    warningService.deleteRedisWarning(redisTagId, warning);
-                    //设置报警取消消息
-                    warning.setOp(ConstantUtil.ALARM_OFF);
-                    warning.setTimestamp(msgObj.getLong("timestamp"));
-                    warnings.add(warning);
-                    break;
-                }
-            }
-        }
-    }
-
     //{"tag_id":0,"power":20,"heart":75,"type":7,"sos":1,"wristlet":0,"move":0,"timestamp":1525672722}*
     //处理状态消息,前将消息写入redis缓存中
     private List<Warning> handleStatus(JSONObject msgObj) {
         List<Warning> statusWarnings = new ArrayList<>();
         Status status = JSONObject.parseObject(msgObj.toJSONString(), Status.class);
-        // Long tagId = msgObj.getLong("tag_id");
         Long tagId = status.getTagId();
         Warning warning = null;
-        Person person = personService.getPerson(tagId);
+        Person person = personService.getCache(tagId);
         if (person != null) {
             //缓存原始消息,一个tagId只缓存一条
-            String oldStatus = statusService.redisGet(ConstantUtil.STATUS_KEY_PRE, tagId);
-            if (oldStatus != null && !oldStatus.isEmpty()) {
+            Status oldStatus = statusService.getCache(tagId);
+            if (oldStatus != null) {
                 Integer heartRate = status.getHeart();
                 //处理异常心率
                 if (heartRate == null || heartRate <= 0 || heartRate >= 200) {
@@ -413,12 +378,12 @@ public class KafkaServiceImpl implements IKafkaService {
                 if (power == null || power <= 0 || power >= 100) {
                     status.setPower(ConstantUtil.STATUS_NONE);
                 }
-                String newStatus = JSON.toJSONString(status);
-                if (!newStatus.equals(oldStatus)) {
-                    statusService.redisAdd(ConstantUtil.STATUS_KEY_PRE, tagId, newStatus);
+
+                if (!status.equals(oldStatus)) {
+                    statusService.addCache(tagId, status);
                 }
             } else {
-                statusService.redisAdd(ConstantUtil.STATUS_KEY_PRE, tagId, JSON.toJSONString(msgObj));
+                statusService.addCache(tagId, status);
             }
 
             warning = this.handleHeart(status, tagId);
@@ -443,9 +408,9 @@ public class KafkaServiceImpl implements IKafkaService {
         } else {
             logger.info("=============处理状态消息时找不到个人信息===================");
             //清理无效的状态缓存，这里指未与人关联的手环的状态数据删除掉
-            String statusStr = statusService.redisGet(ConstantUtil.STATUS_KEY_PRE, tagId);
-            if (statusStr != null && statusStr.isEmpty()) {
-                statusService.redisDel(ConstantUtil.STATUS_KEY_PRE, tagId);
+            Status statusNull = statusService.getCache(tagId);
+            if (statusNull != null) {
+                redisService.delete(ConstantUtil.STATUS_KEY_PRE, tagId);
             }
         }
         return statusWarnings;
@@ -459,8 +424,8 @@ public class KafkaServiceImpl implements IKafkaService {
         Integer hCount = 0;
         Integer lCount = 0;
         String key = ConstantUtil.HEART_COUNT_KEY_PRE + ":" + tagId.toString();
-        hCount = hashOperations.get(key, ConstantUtil.HEART_COUNT_HIGHT);
-        lCount = hashOperations.get(key, ConstantUtil.HEART_COUNT_LOW);
+        hCount = (Integer) statusService.getCache(key, ConstantUtil.HEART_COUNT_HIGHT);
+        lCount = (Integer) statusService.getCache(key, ConstantUtil.HEART_COUNT_LOW);
 
         if (hCount == null) {
             hCount = 0;
@@ -473,9 +438,9 @@ public class KafkaServiceImpl implements IKafkaService {
         if (heartRate.intValue() >= ConstantUtil.HEART_UP_THRESHOLD.intValue() && heartRate.intValue() != ConstantUtil.STATUS_NONE.intValue() && heartRate.intValue() != ConstantUtil.ZERO_THRESHOLD.intValue()) {
             hCount += 1;
             //更新计数器
-            hashOperations.put(key, ConstantUtil.HEART_COUNT_HIGHT, hCount);
+            statusService.addCache(key, ConstantUtil.HEART_COUNT_HIGHT, hCount);
             if (lCount != 0) {
-                hashOperations.put(key, ConstantUtil.HEART_COUNT_LOW, 0);
+                statusService.addCache(key, ConstantUtil.HEART_COUNT_LOW, 0);
             }
             if (hCount.intValue() >= ConstantUtil.HEART_ALARM_COUNT.intValue()) {
                 heartAlarmMsg = "报警心率" + heartRate.intValue() + "bpm,心率过高";
@@ -487,28 +452,26 @@ public class KafkaServiceImpl implements IKafkaService {
                 // heartAlarmMsg = "手环心率过低";
                 heartAlarmMsg = "报警心率" + heartRate.intValue() + "bpm,心率过低";
             }
-            hashOperations.put(key, ConstantUtil.HEART_COUNT_LOW, lCount);
+            statusService.addCache(key, ConstantUtil.HEART_COUNT_LOW, hCount);
             if (hCount != 0) {
-                hashOperations.put(key, ConstantUtil.HEART_COUNT_HIGHT, 0);
+                statusService.addCache(key, ConstantUtil.HEART_COUNT_HIGHT, 0);
             }
         } else if (heartRate.intValue() > ConstantUtil.HEART_LOW_THRESHOLD.intValue() && heartRate.intValue() < ConstantUtil.HEART_UP_THRESHOLD.intValue()) {
             //当心率值为正常时，要取消已存在的心率报警
-            String oldAlarm = statusService.redisGet(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
-            if (oldAlarm != null && !oldAlarm.isEmpty()) {
-                logger.info("====取消心率报警====");
-                Warning oldWarning = JSONObject.parseObject(oldAlarm, Warning.class);
-                oldWarning.setOp(ConstantUtil.ALARM_OFF);
-                warning = oldWarning;
+            Warning oldAlarm = warningService.getCache(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
+            if (oldAlarm != null) {
+                logger.info("======取消心率报警======");
+                oldAlarm.setOp(ConstantUtil.ALARM_OFF);
+                warning = oldAlarm;
                 //删除心率报警缓存
-                statusService.redisDel(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
-                hCount = 0;
-                lCount = 0;
-                //更新计数器
-                hashOperations.put(key, ConstantUtil.HEART_COUNT_HIGHT, hCount);
-                hashOperations.put(key, ConstantUtil.HEART_COUNT_LOW, lCount);
+                redisService.delete(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
             }
+            hCount = 0;
+            lCount = 0;
+            //删除计数器
+            redisService.delete(key);
         } else if (heartRate.intValue() == ConstantUtil.STATUS_NONE.intValue() || heartRate.intValue() == ConstantUtil.ZERO_THRESHOLD.intValue()) {
-            logger.info("当前心率值为" + heartRate + "bpm,获取心率异常");
+            //logger.info("当前心率值为" + heartRate + "bpm,获取心率异常");
         }
 
         if (!heartAlarmMsg.isEmpty()) {
@@ -527,18 +490,18 @@ public class KafkaServiceImpl implements IKafkaService {
         if (power.intValue() <= ConstantUtil.POWER_LOW_THRESHOLD.intValue() && power.intValue() != ConstantUtil.ZERO_THRESHOLD.intValue()) {
             powerAlarmMsg = "手环电量过低";
         } else if (power.intValue() > ConstantUtil.POWER_LOW_THRESHOLD.intValue() && power.intValue() <= ConstantUtil.POWER_UP_THRESHOLD.intValue()) {
-            String oldAlarm = statusService.redisGet(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
-            if (oldAlarm != null && !oldAlarm.isEmpty()) {
+            Warning oldAlarm = warningService.getCache(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
+            if (oldAlarm != null) {
                 //取消电量报警
                 logger.info("=========取消电量报警======");
-                Warning oldWarning = JSONObject.parseObject(oldAlarm, Warning.class);
-                oldWarning.setOp(ConstantUtil.ALARM_OFF);
-                warning = oldWarning;
+                // Warning oldWarning = JSONObject.parseObject(oldAlarm, Warning.class);
+                oldAlarm.setOp(ConstantUtil.ALARM_OFF);
+                warning = oldAlarm;
                 //删除电量报警缓存
-                statusService.redisDel(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
+                redisService.delete(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
             }
         } else if (power.intValue() == ConstantUtil.STATUS_NONE.intValue() || power.intValue() > ConstantUtil.POWER_UP_THRESHOLD.intValue() || power.intValue() == ConstantUtil.ZERO_THRESHOLD) {
-            logger.info("当前电量值为：" + power.intValue() + "%,获取电量异常");
+            //logger.info("当前电量值为：" + power.intValue() + "%,获取电量异常");
         }
 
 
@@ -550,16 +513,15 @@ public class KafkaServiceImpl implements IKafkaService {
     }
 
     //当一次按钮状态与当前按钮状态不一致就触发告警
-    private Warning handleSos(Status status, String oldStatus, Long tagId) {
+    private Warning handleSos(Status status, Status oldStatus, Long tagId) {
         Warning warning = null;
         if (oldStatus != null) {
-            Status oldStatusObj = JSONObject.parseObject(oldStatus, Status.class);
             String sosAlarmMsg = "";
-            Integer oldSos = oldStatusObj.getSos();
+            Integer oldSos = oldStatus.getSos();
             Integer sos = status.getSos();
             Long timestamp = status.getTimestamp();
             if (sos.intValue() != ConstantUtil.STATUS_OFF.intValue() && sos.intValue() != ConstantUtil.STATUS_ON.intValue()) {
-                logger.info("=======手环SOS消息异常:" + sos + "======");
+                // logger.info("=======手环SOS消息异常:" + sos + "======");
             }
 
             if (oldSos.intValue() == ConstantUtil.STATUS_OFF.intValue()) {
@@ -569,14 +531,13 @@ public class KafkaServiceImpl implements IKafkaService {
             } else if (oldSos.intValue() == ConstantUtil.STATUS_ON.intValue()) {
                 if (sos.intValue() != oldSos.intValue() && sos.intValue() != ConstantUtil.STATUS_NONE.intValue()) {
                     logger.info("====取消手环SOS求救报警==");
-                    String oldAlarm = statusService.redisGet(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
+                    Warning oldAlarm = warningService.getCache(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
                     //生成取消报警
-                    if (oldAlarm != null && !oldAlarm.isEmpty()) {
-                        Warning oldWarning = JSONObject.parseObject(oldAlarm, Warning.class);
-                        oldWarning.setOp(ConstantUtil.ALARM_OFF);
-                        warning = oldWarning;
+                    if (oldAlarm != null) {
+                        oldAlarm.setOp(ConstantUtil.ALARM_OFF);
+                        warning = oldAlarm;
                         //删除sos报警缓存
-                        statusService.redisDel(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
+                        redisService.delete(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
                     }
                 }
             }
@@ -589,17 +550,16 @@ public class KafkaServiceImpl implements IKafkaService {
         return warning;
     }
 
-    private Warning handleWristlet(Status status, String oldStatus, Long tagId) {
+    private Warning handleWristlet(Status status, Status oldStatus, Long tagId) {
         Warning warning = null;
         if (oldStatus != null) {
-            Status oldStatusObj = JSONObject.parseObject(oldStatus, Status.class);
             String wristletAlarmMsg = "";
-            Integer oldWristlet = oldStatusObj.getWristlet();
+            Integer oldWristlet = oldStatus.getWristlet();
             Integer wristlet = status.getWristlet();
             Long timestamp = status.getTimestamp();
 
             if (wristlet.intValue() != ConstantUtil.STATUS_OFF.intValue() && wristlet.intValue() != ConstantUtil.STATUS_ON.intValue()) {
-                logger.info("=======手环腕带消息异常:" + wristlet + "======");
+                // logger.info("=======手环腕带消息异常:" + wristlet + "======");
             }
             if (oldWristlet.intValue() == ConstantUtil.STATUS_OFF.intValue()) {
                 if (wristlet.intValue() != oldWristlet.intValue() && wristlet.intValue() != ConstantUtil.STATUS_NONE.intValue()) {
@@ -607,15 +567,14 @@ public class KafkaServiceImpl implements IKafkaService {
                 }
             } else if (oldWristlet.intValue() == ConstantUtil.STATUS_ON.intValue()) {
                 if (wristlet.intValue() != wristlet.intValue() && wristlet.intValue() != ConstantUtil.STATUS_NONE.intValue()) {
-                    logger.info("====取消腕带拆除报警==");
-                    String oldAlarm = statusService.redisGet(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
+                    logger.info("====取消腕带拆除报警====");
+                    Warning oldAlarm = warningService.getCache(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
                     //生成取消报警
-                    if (oldAlarm != null && !oldAlarm.isEmpty()) {
-                        Warning oldWarning = JSONObject.parseObject(oldAlarm, Warning.class);
-                        oldWarning.setOp(ConstantUtil.ALARM_OFF);
-                        warning = oldWarning;
+                    if (oldAlarm != null) {
+                        oldAlarm.setOp(ConstantUtil.ALARM_OFF);
+                        warning = oldAlarm;
                         //删除sos报警缓存
-                        statusService.redisDel(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
+                        redisService.delete(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
                     }
                 }
             }
@@ -642,18 +601,16 @@ public class KafkaServiceImpl implements IKafkaService {
         String levelName = "";
         String positionName = "";
         if (leveCode != null && !leveCode.isEmpty()) {
-            String levelStr = levelService.redisGet(ConstantUtil.LEVEL_KEY_PRE, leveCode);
-            if (levelStr != null && !levelStr.isEmpty()) {
-                Level level = JSONObject.parseObject(levelStr, Level.class);
+            Level level = levelService.getCache(leveCode);
+            if (level != null) {
                 levelName = level.getLevelName();
             }
         }
         coordinate.setLevelName(levelName);
 
         if (positionCode != null && !positionCode.isEmpty()) {
-            String positionStr = positionService.redisGet(ConstantUtil.POSITION_KEY_PRE, positionCode);
-            if (positionStr != null && !positionStr.isEmpty()) {
-                Position position = JSONObject.parseObject(positionStr, Position.class);
+            Position position = positionService.getCache(positionCode);
+            if (position != null) {
                 positionName = position.getPositionName();
             }
         }
@@ -686,7 +643,7 @@ public class KafkaServiceImpl implements IKafkaService {
     //构造状态报警消息
     private Warning newStatusWarning(Status status, Long tagId, Integer level, Integer type, String warningMsg, Integer op, Long timestamp) {
         Warning warning = null;
-        Coordinate coordinate = coordinateService.getReidsCoordinate(tagId);
+        Coordinate coordinate = coordinateService.getCache(tagId);
         if (coordinate != null) {
             warning = new Warning();
             warning.setPersonName(coordinate.getPersonName());
@@ -715,7 +672,7 @@ public class KafkaServiceImpl implements IKafkaService {
         } else {
             //当上一次的坐标不存在时使用原点坐标表示未获取到坐标
             warning = new Warning();
-            Person person = personService.getPerson(tagId);
+            Person person = personService.getCache(tagId);
             Department department = departmentService.getCache(person.getDepartmentCode());
             warning.setPersonName(person.getPersonName());
             warning.setPersonCode(person.getPersonCode());
@@ -745,22 +702,20 @@ public class KafkaServiceImpl implements IKafkaService {
     }
 
     //生成报警消息和带状态的坐标信息,这里只是让坐标消息带上报警,并没有指定带具体哪类报警的状态
-    private Warning createfenceAlarm(String warningMsg, List<String> warningLsOld, Coordinate coordinate) {
+    private Warning createfenceAlarm(String warningMsg, List<Warning> warningsOld, Coordinate coordinate) {
         Warning warning = null;
         // 这里只是让坐标消息带上报警,并没有指定带具体哪类报警的状态
         this.setCoordinateType(coordinate);
         Long curTagId = coordinate.getTagId();
         //判断旧报警中是否已有相同报警如果有则不添加新的报警
         Boolean isExist = false;
-        if (warningLsOld != null && warningLsOld.size() > 0) {
+        if (warningsOld != null && warningsOld.size() > 0) {
             //判断是否之前添加过报警如果添加过则不添加新的
-            for (String redisWarningStr : warningLsOld) {
-                JSONObject redisWarning = JSON.parseObject(redisWarningStr);
-
-                String curCode = coordinate.getStrategyCode();
-                Long redisTagId = redisWarning.getLong("tagId");
-                String redisCode = redisWarning.getString("strategyCode");
-                if (curTagId.longValue() == redisTagId.longValue() && curCode.equals(redisCode)) {
+            for (Warning redisWarning : warningsOld) {
+                String currStategyCode = coordinate.getStrategyCode();
+                Long redisWarningTagId = redisWarning.getTagId();
+                String redisWarningStrategyCode = redisWarning.getStrategyCode();
+                if (curTagId.longValue() == redisWarningTagId.longValue() && currStategyCode.equals(redisWarningStrategyCode)) {
                     isExist = true;
                     break;
                 }
@@ -779,13 +734,13 @@ public class KafkaServiceImpl implements IKafkaService {
     private Warning createFenceAlarm(String warningMsg, Coordinate coordinate) {
         Warning warning = this.newWarning(ConstantUtil.FENCE_ALARM, warningMsg, ConstantUtil.ALARM_ON, coordinate);
         Long tagId = coordinate.getTagId();
-        warningService.addRedisWarning(tagId, JSON.toJSONString(warning));
+        warningService.addRedisWarning(tagId, coordinate.getStrategyCode(), warning);
         return warning;
     }
 
     //生成心率报警消息,并写入缓存中,下一次坐标消息到来会遍历此报警
     private Warning createHeartAlarm(Status status, String warningMsg, Long tagId, Long timestamp) {
-        String oldWarning = statusService.redisGet(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
+        Warning oldWarning = warningService.getCache(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复发推送
         // if (isSameWarning(warningMsg, oldWarning)) return null;
@@ -794,7 +749,9 @@ public class KafkaServiceImpl implements IKafkaService {
             return warning;
         }
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_URGEN, ConstantUtil.HEART_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
-        statusService.redisAdd(ConstantUtil.HEART_ALARM_KEY_PRE, tagId, JSON.toJSONString(warning));
+        if (warning != null) {
+            warningService.addCache(ConstantUtil.HEART_ALARM_KEY_PRE, tagId, warning);
+        }
         return warning;
     }
 
@@ -812,10 +769,9 @@ public class KafkaServiceImpl implements IKafkaService {
 
     //生成电量报警消息,并写入缓存中,下一次坐标消息到来会遍历此报警
     private Warning createPowerAlarm(Status status, String warningMsg, Long tagId, Long timestamp) {
-        String oldWarning = statusService.redisGet(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
+        Warning oldWarning = warningService.getCache(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复推送
-        // if (isSameWarning(warningMsg, oldWarning)) return null;
         //如果存在旧的报警则不创建新的报警
         if (oldWarning != null) {
             return warning;
@@ -823,15 +779,16 @@ public class KafkaServiceImpl implements IKafkaService {
         //将上一次的坐标添加到报警中表明报警产生的位置
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_COMM, ConstantUtil.POWER_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         //添加报警缓存
-        statusService.redisAdd(ConstantUtil.POWER_ALARM_KEY_PRE, tagId, JSON.toJSONString(warning));
+        if (warning != null) {
+            warningService.addCache(ConstantUtil.POWER_ALARM_KEY_PRE, tagId, warning);
+        }
         return warning;
     }
 
     private Warning createSosAlarm(Status status, String warningMsg, Long tagId, Long timestamp) {
-        String oldWarning = statusService.redisGet(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
+        Warning oldWarning = warningService.getCache(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复推送
-        // if (isSameWarning(warningMsg, oldWarning)) return null;
         //如果存在旧的报警则不创建新的报警
         if (oldWarning != null) {
             return warning;
@@ -839,15 +796,16 @@ public class KafkaServiceImpl implements IKafkaService {
         //将上一次的坐标添加到报警中表明报警产生的位置
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_URGEN, ConstantUtil.SOS_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         //添加报警缓存
-        statusService.redisAdd(ConstantUtil.SOS_ALARM_KEY_PRE, tagId, JSON.toJSONString(warning));
+        if (warning != null) {
+            warningService.addCache(ConstantUtil.SOS_ALARM_KEY_PRE, tagId, warning);
+        }
         return warning;
     }
 
     private Warning createWristletAlarm(Status status, String warningMsg, Long tagId, Long timestamp) {
-        String oldWarning = statusService.redisGet(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
+        Warning oldWarning = warningService.getCache(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
         Warning warning = null;
         //相同报警不重复推送
-        // if (isSameWarning(warningMsg, oldWarning)) return null;
         //如果存在旧的报警则不创建新的报警
         if (oldWarning != null) {
             return warning;
@@ -855,94 +813,27 @@ public class KafkaServiceImpl implements IKafkaService {
         //将上一次的坐标添加到报警中表明报警产生的位置
         warning = this.newStatusWarning(status, tagId, ConstantUtil.ALARM_URGEN, ConstantUtil.WRISTLET_ALARM, warningMsg, ConstantUtil.ALARM_ON, timestamp);
         //添加报警缓存
-        statusService.redisAdd(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId, JSON.toJSONString(warning));
-        return warning;
-    }
-
-    //处理直接报警消息,生成报警消息缓存
-    private Warning createWarning(String personName, JSONObject msgObj, List<Warning> warningLsOld) {
-        Integer warningType = msgObj.getInteger("warning_type");
-        Long tagId = msgObj.getLong("tag_id");
-        Warning warning = null;
-        //判断旧报警中是否已有相同报警如果有则不添加新的报警
-        Boolean isExist = false;
-        if (warningLsOld != null && warningLsOld.size() > 0) {
-            //判断是否之前添加过报警如果添加过则不添加新的
-            for (Warning redisWarning : warningLsOld) {
-                Long redisTagId = redisWarning.getTagId();
-                Integer redisType = redisWarning.getType();
-                if (tagId.longValue() == redisTagId.longValue() && warningType.intValue() == redisType.intValue()) {
-                    isExist = true;
-                }
-            }
-            if (!isExist) {
-                warning = this.createWarning(personName, msgObj);
-            }
-        } else {
-            warning = this.createWarning(personName, msgObj);
+        if (warning != null) {
+            warningService.addCache(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId, warning);
         }
         return warning;
     }
-
-    //处理直接报警消息,生成报警消息
-    private Warning createWarning(String personName, JSONObject msgObj) {
-        Warning warning = new Warning();
-        Integer warningType = msgObj.getInteger("warning_type");
-        Long timestamp = msgObj.getLong("timestamp");
-        Long tagId = msgObj.getLong("tag_id");
-        String warningMsg = "";
-        if (warningType == 2) {
-            warningMsg = "SOS求救报警";
-            warning.setLevel(2);
-        } else if (warningType == 3) {
-            warningMsg = "跌倒求救报警";
-            warning.setLevel(2);
-        }
-        warning.setPersonName(personName);
-        warning.setTagId(tagId);
-        warning.setType(warningType);
-        warning.setMsg(warningMsg);
-        warning.setTimestamp(timestamp);
-        String warningStr = JSON.toJSONString(warning);
-        warningService.addRedisWarning(tagId, warningStr);
-        return warning;
-    }
-
-    //处理直接报警消息,拼成带坐标的报警,
-    private Coordinate setCoordinate(Coordinate coordinate, JSONObject msgObj) {
-        Integer warningType = msgObj.getInteger("warning_type");
-        Long timestamp = msgObj.getLong("timestamp");
-        String warningMsg = "";
-        if (warningType == 2) {
-            warningMsg = "SOS求救报警";
-            coordinate.setType(3);
-            coordinate.setMsg(warningMsg);
-        } else if (warningType == 3) {
-            warningMsg = "跌倒求救报警";
-            coordinate.setMsg(warningMsg);
-            coordinate.setType(3);
-        }
-        coordinate.setTimestamp(timestamp);
-        return coordinate;
-    }
-
 
     //如果旧报警存在，而当前坐标位置不报警状态，则要删除旧报警，并生成旧报警取消消息
-    private Warning cancelFenceAlarm(Coordinate coordinate, List<String> warningLsOld) {
+    private Warning cancelFenceAlarm(Coordinate coordinate, List<Warning> warningsOld) {
         Warning warningCancel = null;
-        for (String warningStr : warningLsOld) {
-            Warning warning = JSON.parseObject(warningStr, Warning.class);
+        for (Warning redisWarning : warningsOld) {
             Long curTagId = coordinate.getTagId();
             String curCode = coordinate.getStrategyCode();
-            Long redisTagId = warning.getTagId();
-            String redisCode = warning.getStrategyCode();
+            Long redisTagId = redisWarning.getTagId();
+            String redisCode = redisWarning.getStrategyCode();
             if (curTagId.longValue() == redisTagId.longValue() && curCode.equals(redisCode)) {
                 // 删除旧报警缓存
-                warningService.deleteRedisWarning(redisTagId, warningStr);
+                warningService.delRedisWarning(coordinate.getStrategyCode(), redisTagId, ConstantUtil.FENCE_ALARM_KEY_PRE);
                 //设置报警取消消息
-                warning.setOp(ConstantUtil.ALARM_OFF);
-                warning.setTimestamp(coordinate.getTimestamp());
-                warningCancel = warning;
+                redisWarning.setOp(ConstantUtil.ALARM_OFF);
+                redisWarning.setTimestamp(coordinate.getTimestamp());
+                warningCancel = redisWarning;
             }
         }
         return warningCancel;

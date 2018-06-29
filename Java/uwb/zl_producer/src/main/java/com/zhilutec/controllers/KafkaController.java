@@ -36,7 +36,7 @@ public class KafkaController {
         try {
             String message = request.getParameter("message");
             logger.info("kafka的消息={}", message);
-            kafkaTemplate.send(kafkaConfig.getDefaultTopic(), "key", message);
+            kafkaTemplate.send(kafkaConfig.getTopic(), "key", message);
             kafkaTemplate.setProducerListener(new KafkaProducerListener());
 
             logger.info("发送kafka成功.");

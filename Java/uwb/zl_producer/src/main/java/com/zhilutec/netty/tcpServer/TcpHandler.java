@@ -125,7 +125,7 @@ public class TcpHandler extends ChannelInboundHandlerAdapter {
                 UPGRADE_INFO.setCmdDir(tcpMsgObj.getString("cmd_dir"));
                 UPGRADE_INFO.setUpStatus(tcpMsgObj.getInteger("up_status"));
                 UPGRADE_INFO.setType(tcpMsgObj.getInteger("type"));
-                upgradeService.updateUpgradeStatus(ConstantUtil.UPGRADE, ConstantUtil.UPGRADE, UPGRADE_INFO);
+                upgradeService.updateUpgradeStatus(UPGRADE_INFO);
             } else {
                 tcpHandler.kafkaTemplate.send(tcpHandler.kafkaTopic, tcpMsgObj.toJSONString());
                 //debug

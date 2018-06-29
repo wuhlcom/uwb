@@ -27,7 +27,7 @@ public class KafkaProducerListener implements ProducerListener {
         // logger.info("----------RecordMetadata:" + recordMetadata);
         // logger.info("==========kafka发送数据成功（日志结束）==========");
         logger.info("======producer=====onSuccess===============");
-        logger.info("------value:"+ value);
+        logger.info("------producer value:{}", value);
     }
 
     /**
@@ -44,7 +44,7 @@ public class KafkaProducerListener implements ProducerListener {
         //logger.info("----------Exception:" + exception);
         //logger.info("==========kafka发送数据错误（日志结束）==========");
         logger.info("======producer=====onError===============");
-        logger.info("------Exception:"+ exception);
+        logger.info("------Exception:" + exception);
         exception.printStackTrace();
     }
 

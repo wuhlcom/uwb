@@ -4,7 +4,6 @@ import javax.persistence.Table;
 
 @Table(name = "uwb_fences")
 public class Fence extends Base {
-    private static final long serialVersionUID = 1L;
     private String fenceName;
     private String fenceCode;
     private String remark;//` varchar(255) DEFAULT NULL COMMENT '说明',

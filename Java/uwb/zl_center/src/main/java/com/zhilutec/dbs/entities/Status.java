@@ -88,4 +88,34 @@ public class Status {
                 ", timestamp=" + timestamp +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Status status = (Status) o;
+
+        if (tagId != null ? !tagId.equals(status.tagId) : status.tagId != null) return false;
+        if (power != null ? !power.equals(status.power) : status.power != null) return false;
+        if (heart != null ? !heart.equals(status.heart) : status.heart != null) return false;
+        if (type != null ? !type.equals(status.type) : status.type != null) return false;
+        if (sos != null ? !sos.equals(status.sos) : status.sos != null) return false;
+        if (wristlet != null ? !wristlet.equals(status.wristlet) : status.wristlet != null) return false;
+        if (move != null ? !move.equals(status.move) : status.move != null) return false;
+        return timestamp != null ? timestamp.equals(status.timestamp) : status.timestamp == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tagId != null ? tagId.hashCode() : 0;
+        result = 31 * result + (power != null ? power.hashCode() : 0);
+        result = 31 * result + (heart != null ? heart.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (sos != null ? sos.hashCode() : 0);
+        result = 31 * result + (wristlet != null ? wristlet.hashCode() : 0);
+        result = 31 * result + (move != null ? move.hashCode() : 0);
+        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
+        return result;
+    }
 }

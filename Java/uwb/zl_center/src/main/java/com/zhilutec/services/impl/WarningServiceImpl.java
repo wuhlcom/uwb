@@ -1,113 +1,98 @@
 package com.zhilutec.services.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.dbs.entities.Warning;
 import com.zhilutec.services.IRedisService;
 import com.zhilutec.services.IWarningService;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
-public class WarningServiceImpl extends IRedisService<Warning> implements IWarningService {
+public class WarningServiceImpl implements IWarningService {
 
+    @Resource
+    IRedisService redisService;
+
+
+    //获取缓存中围栏报警
     @Override
-    public List<Warning> getRedisWarnings(String key) {
-        return this.getAll(key);
+    public List<Warning> getFenceWarnings(String key) {
+        List<Object> objects = redisService.hashValues(key);
+        List<Warning> warnings = new ArrayList<>();
+        for (Object object : objects) {
+            Warning warning = null;
+            String mapStr = JSONObject.toJSONString(object);
+            warning = JSONObject.parseObject(mapStr, Warning.class);
+            warnings.add(warning);
+        }
+        return warnings;
     }
 
-    /**
-     * @param key   tagId+strategyCode
-     * @param field level
-     */
+    //获取缓存中其它报警
     @Override
-    public Warning getReidsWarning(String key, String field) {
-        return this.get(key, field);
-    }
+    public Warning getCache(String key) {
+        Warning warning = null;
+        Map map = redisService.hashGetMap(key);
+        if (map == null || map.isEmpty()) {
+            return warning;
+        }
+        String mapStr = JSONObject.toJSONString(map);
 
-    @Override
-    public Warning getReidsWarning(Long tagId, String strategyCode, Integer level) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId) + ":" + strategyCode;
-        return this.get(warningKey, level.toString());
-    }
-
-    @Override
-    public void deleteRedisWarning(String key, String field) {
-        this.remove(key, field);
-    }
-
-
-    @Override
-    public void deleteRedisWarning(Long tagId, String strategyCode, Integer level) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId) + ":" + strategyCode;
-        this.deleteRedisWarning(warningKey, level.toString());
-    }
-
-    @Override
-    public void deleteRedisWarning(Long tagId, Integer warningType) {
-        String wType = Integer.toString(warningType);
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId) + ":" + wType;
-        this.deleteRedisWarning(warningKey, wType);
-    }
-
-
-    @Override
-    public void putRedisWarning(Long tagId, String strategyCode, Integer level, Warning warning, long expire) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId) + ":" + strategyCode;
-        this.put(warningKey, level.toString(), warning, expire);
+        warning = JSONObject.parseObject(mapStr, Warning.class);
+        return warning;
     }
 
     @Override
-    public void addRedisWarning(Long tagId, Integer warningType, Warning warning, long expire) {
-        String wType = Integer.toString(warningType);
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId) + ":" + wType;
-        this.put(warningKey, wType, warning, expire);
+    public Warning getCache(String keyPre, Object o) {
+        String key = redisService.genRedisKey(keyPre, o);
+        return getCache(key);
     }
 
     @Override
-    public List<Warning> getRedisWarningList(Long tagId) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId);
-        return this.listAll(warningKey);
+    public List<Warning> getFenceWarnings(Long tagId) {
+        String key = redisService.genRedisKey(ConstantUtil.FENCE_ALARM_KEY_PRE, tagId);
+        List<Object> objects = redisService.hashValues(key);
+        List<Warning> warnings = new ArrayList<>();
+        for (Object object : objects) {
+            Warning warning = null;
+            String mapStr = JSONObject.toJSONString(object);
+            warning = JSONObject.parseObject(mapStr, Warning.class);
+            warnings.add(warning);
+        }
+        return warnings;
     }
 
 
+    //添加围栏报警
     @Override
-    public List<String> getRedisStrList(Long tagId) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId);
-        return this.listStr(warningKey);
+    public void addRedisWarning(Long tagId, String strategyCode, Warning warning) {
+        String warningKey = redisService.genRedisKey(ConstantUtil.FENCE_ALARM_KEY_PRE, tagId);
+        redisService.hashAdd(warningKey, strategyCode, warning, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 
 
-
+    //删除单个报警缓存
     @Override
-    public void addRedisWarning(Long tagId, Warning warning) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId);
-        this.lelfPush(warningKey, warning, ConstantUtil.REDIS_DEFAULT_TTL);
+    public Long delRedisWarning(String strategyCode, Long tagId, String warningKeyPre) {
+        String key = redisService.genRedisKey(warningKeyPre, tagId);
+        return redisService.hashDel(key, strategyCode);
     }
 
+    //添加其它报警
     @Override
-    public void addRedisWarning(Long tagId, String str) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId);
-        this.lelfPushStr(warningKey, str, ConstantUtil.REDIS_DEFAULT_TTL);
-    }
+    public void addCache(String keyPre, Long tagId, Warning warning) {
+        String key = redisService.genRedisKey(keyPre, tagId);
 
-    //序列化的对象使用lrem key,count obj无法删除
-    @Override
-    public void deleteRedisWarning(Long tagId, Warning warning) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId);
-        this.remove(warningKey, 0, warning);
-    }
-
-    @Override
-    public void deleteRedisWarning(Long tagId, String str) {
-        String warningKey = ConstantUtil.FENCE_ALARM_KEY_PRE + ":" + Long.toString(tagId);
-        this.remove(warningKey, 0, str);
-    }
-
-    @Override
-    protected String getRedisKey() {
-        return null;
+        String str = JSON.toJSONString(warning);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 
 }

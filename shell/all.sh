@@ -19,6 +19,7 @@ d_start(){
  ${SHELL_HOME}/fdfs_trackerd start
  ${SHELL_HOME}/fdfs_storaged start
  ${SHELL_HOME}/services.sh start 
+ ${SHELL_HOME}/alrtls.sh start 
 }
 
 case "$1" in

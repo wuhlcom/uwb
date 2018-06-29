@@ -7,8 +7,6 @@ import java.util.List;
 
 @Table(name = "uwb_departments")
 public class Department extends Base {
-
-    private static final long serialVersionUID = 1L;
     private String departmentName; //` varchar(128) DEFAULT NULL COMMENT '部门名称',
     private String departmentCode;//` varchar(64) DEFAULT NULL COMMENT '部门编号',
     private String remark;//` varchar(255) DEFAULT NULL COMMENT '说明',

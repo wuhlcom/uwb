@@ -20,6 +20,12 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import java.lang.reflect.Method;
 
+/**
+ * 用JdkSerializationRedisSerializer序列化的话，被序列化的对象必须实现Serializable接口
+ * 如果需要保存对象为json的话推荐使用JacksonJsonRedisSerializer，它不仅可以将对象序列化，
+ * 还可以将对象转换为json字符串并保存到redis中，但需要和jackson配合一起使用。
+ * 用JacksonJsonRedisSerializer序列化的话，被序列化的对象不用实现Serializable接口。
+ */
 @Configuration
 @EnableCaching
 public class RedisCacheConfig extends CachingConfigurerSupport {
@@ -97,7 +103,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
     }
 
     /**
-     * 非序列化的redis数据使用此类来获取
+     * 字符串类数据，使用此类来处理
      */
     @Bean
     StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
@@ -112,7 +118,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * @return
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
@@ -137,8 +143,6 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
         // redisTemplate.setHashValueSerializer(new EntityRedisSerializer());
         redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
         redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
-
-
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
@@ -147,7 +151,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * 实例化 HashOperations 对象,可以使用 Hash 类型操作
      */
     @Bean
-    public HashOperations<String, String, Object> hashOperations(RedisTemplate<String,Object> redisTemplate) {
+    public HashOperations<?, ?, ?> hashOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForHash();
     }
 
@@ -155,7 +159,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * 实例化 ValueOperations 对象,可以使用 String 操作
      */
     @Bean
-    public ValueOperations<String, Object> valueOperations(RedisTemplate<String, Object> redisTemplate) {
+    public ValueOperations<?, ?> valueOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForValue();
     }
 
@@ -165,7 +169,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * @return
      */
     @Bean
-    public ListOperations<String, Object> listOperations(RedisTemplate<String, Object> redisTemplate) {
+    public ListOperations<?, ?> listOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForList();
     }
 
@@ -175,7 +179,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * @return
      */
     @Bean
-    public ListOperations<String, String> listStr(RedisTemplate<String, String> redisTemplate) {
+    public ListOperations<?, ?> listStr(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForList();
     }
 
@@ -184,7 +188,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * 实例化 SetOperations 对象,可以使用 Set 操作
      */
     @Bean
-    public SetOperations<String, Object> setOperations(RedisTemplate<String, Object> redisTemplate) {
+    public SetOperations<?, ?> setOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForSet();
     }
 
@@ -192,7 +196,7 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
      * 实例化 ZSetOperations 对象,可以使用 ZSet 操作
      */
     @Bean
-    public ZSetOperations<String, Object> zSetOperations(RedisTemplate<String, Object> redisTemplate) {
+    public ZSetOperations<?, ?> zSetOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForZSet();
     }
 

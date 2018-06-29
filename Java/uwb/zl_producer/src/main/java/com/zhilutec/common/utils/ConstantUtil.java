@@ -1,14 +1,7 @@
 package com.zhilutec.common.utils;
 
-import com.alibaba.fastjson.JSONObject;
-import com.zhilutec.common.result.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.List;
 
 public class ConstantUtil {
 
@@ -16,6 +9,7 @@ public class ConstantUtil {
     public static final String UPGRADE_TYPE = "upgrade";
     public static final String UPGRADE_QUERY = "query";
     public static final String UPGRADE_RESP = "resp";
+    public static final List<String> REDIS_KEYS = Arrays.asList(UPGRADE);
 
     public static final Integer UPGRADE_STAT_SUCC = 0;
     public static final Integer UPGRADE_STAT_RUNN = 1;
@@ -24,4 +18,7 @@ public class ConstantUtil {
     public static final Integer UPGRADE_STAT_REPEAT = 4;
     public static final Integer UPGRADE_STAT_DEFAULT = 100;
     public static final Integer UPGRADE_MSG_TYPE = 6;
+
+    public static Long REDIS_DEFAULT_TTL = -1L;
+
 }

@@ -1,39 +1,38 @@
 package com.zhilutec.services.impl;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.result.ResultCode;
-
 import com.zhilutec.common.utils.AgeUtil;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.common.validators.PersonValidator;
 import com.zhilutec.dbs.daos.DepartmentDao;
 import com.zhilutec.dbs.daos.PersonDao;
-
 import com.zhilutec.dbs.entities.Department;
 import com.zhilutec.dbs.entities.Person;
-
 import com.zhilutec.dbs.entities.Strategy;
 import com.zhilutec.dbs.pojos.DepartmentRs;
 import com.zhilutec.dbs.pojos.PersonListRs;
 import com.zhilutec.dbs.pojos.RedisPolicy;
-import com.zhilutec.services.*;
+import com.zhilutec.services.IDepartmentService;
+import com.zhilutec.services.IPersonService;
+import com.zhilutec.services.IRedisService;
+import com.zhilutec.services.IStrategyService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.util.*;
 
 @Service
-public class PersonServiceImpl extends IRedisService<Person> implements IPersonService {
+public class PersonServiceImpl implements IPersonService {
 
     @Autowired
     PersonDao personDao;
@@ -47,13 +46,21 @@ public class PersonServiceImpl extends IRedisService<Person> implements IPersonS
     @Resource
     IStrategyService strategyService;
 
-
     @Resource
-    IWarningService warningService;
+    IRedisService redisService;
 
-    @Resource
-    IStatusService statusService;
-
+    @Override
+    @Transactional
+    public void personCacheInit() {
+        Example example = new Example(Person.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("isdel", 1).andIsNotNull("tagId");
+        List<Person> people = personDao.selectByExample(example);
+        for (Person person : people) {
+            Long tagId = person.getTagId();
+            this.addPersonCache(tagId, person);
+        }
+    }
 
 
     /**
@@ -72,14 +79,6 @@ public class PersonServiceImpl extends IRedisService<Person> implements IPersonS
     public List<DepartmentRs> getPersonsByGroup() {
         return personDao.groupPersonsByDepartment();
     }
-
-    public void groupPersonsByDepartment() {
-        List<DepartmentRs> departmentRs = this.getPersonsByGroup();
-        for (DepartmentRs departmentR : departmentRs) {
-            departmentR.getDepartmentCode();
-        }
-    }
-
 
     /**
      * 获取人员清单，包含部门，手环信息
@@ -210,14 +209,15 @@ public class PersonServiceImpl extends IRedisService<Person> implements IPersonS
 
     /**
      * 添加将部门策略展开到人员缓存
+     * 对于围栏策略，一个部门可以有多个围栏，这样就可能会有多个策略
      */
-    public void addPolicy(JSONObject jsonObject)  {
+    private void addPolicy(JSONObject jsonObject) {
         Long tagId = jsonObject.getLong("tagId");
         String departmentCode = jsonObject.getString("departmentCode");
         if (tagId != null && departmentCode != null && !departmentCode.isEmpty()) {
             List<Strategy> strategies = strategyService.getStrategyByUserId(departmentCode);
             if (strategies != null && strategies.size() > 0) {
-                this.addRedisPolicy(tagId, strategies);
+                this.addDptPolicy(tagId, strategies);
             }
         }
     }
@@ -378,50 +378,6 @@ public class PersonServiceImpl extends IRedisService<Person> implements IPersonS
         }
     }
 
-    private void updatePersonPolicy(Long tagId, String departmentCode) throws InterruptedException {
-        List<Strategy> strategies = strategyService.getStrategyByUserId(departmentCode);
-        //策略不为空,更新策略
-        if (strategies != null && strategies.size() > 0) {
-            this.addRedisPolicy(tagId, strategies);
-        }
-    }
-
-    //删除人员的策略缓存和报警缓存，报警缓存有多种要全部删除
-    private void removeCache(Long personTagId) {
-        //不论是否有缓存都删除一次旧tag的策略，报警，人员缓存
-        //删除策略缓存
-        strategyService.delRedisByKey(ConstantUtil.POLICY_KEY_PRE, personTagId);
-        //删除报警缓存
-        warningService.delRedisByKey(ConstantUtil.FENCE_ALARM_KEY_PRE, personTagId);
-        statusService.redisDel(ConstantUtil.HEART_ALARM_KEY_PRE,personTagId);
-        statusService.redisDel(ConstantUtil.POWER_ALARM_KEY_PRE,personTagId);
-        statusService.redisDel(ConstantUtil.SOS_ALARM_KEY_PRE,personTagId);
-        statusService.redisDel(ConstantUtil.WRISTLET_ALARM_KEY_PRE,personTagId);
-        statusService.redisDel(ConstantUtil.HEART_COUNT_KEY_PRE,personTagId);
-    }
-
-    //添加策略缓存
-    private void addRedisPolicy(Long tagId, List<Strategy> strategies) {
-        for (Strategy strategy : strategies) {
-            String timeValue = strategy.getTimeValue();
-            String strategyCode = strategy.getStrategyCode();
-            List<String> timeValues = Arrays.asList(timeValue.split(","));
-            //构建策略缓存对象
-            RedisPolicy redisPolicy = new RedisPolicy();
-            redisPolicy.setStrategyCode(strategy.getStrategyCode());
-            redisPolicy.setFenceCode(strategy.getFenceCode());
-            redisPolicy.setStartTime(strategy.getStartTime());
-            redisPolicy.setFinishTime(strategy.getFinishTime());
-            redisPolicy.setForbidden(strategy.getForbidden());
-            redisPolicy.setLevel(strategy.getLevel());
-            redisPolicy.setTimeValues(timeValues);
-            redisPolicy.setTimeType(strategy.getTimeType());
-            redisPolicy.setUserType(strategy.getUserType());
-            redisPolicy.setAvailable(strategy.getAvailable());
-            //添加人员策略缓存
-            strategyService.addTagidPolicy(tagId, strategyCode, redisPolicy);
-        }
-    }
 
     //更新参数校验
     private String updateParamCheck(JSONObject jsonObject) {
@@ -578,54 +534,76 @@ public class PersonServiceImpl extends IRedisService<Person> implements IPersonS
         return personDao.selectByExample(example);
     }
 
-    @Override
-    protected String getRedisKey() {
-        return null;
-    }
 
-    @Override
-    public void flushdDbData() {
-        this.flushdb();
-    }
-
-    @Override
-    @Transactional
-    public void personCacheInit() {
-        Example example = new Example(Person.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("isdel", 1).andIsNotNull("tagId");
-        List<Person> people = personDao.selectByExample(example);
-        for (Person person : people) {
-            Long tagId = person.getTagId();
-            this.addPersonCache(tagId, person);
-        }
-    }
-
-    //key-value将人员tag和名字添加到缓存中
-    @Override
-    public void addPersonCache(Long tagId, String personName) {
-        if (tagId != null) {
-            String key = ConstantUtil.PERSON_KEY_PRE + ":" + tagId.toString();
-            this.strSet(key, personName, ConstantUtil.REDIS_DEFAULT_TTL);
-        }
-    }
-
-
-    //hash将人员tag和名字添加到缓存中
+    //将人员信息添加到缓存
     @Override
     public void addPersonCache(Long tagId, Person person) {
         if (tagId != null) {
-            String key = ConstantUtil.PERSON_KEY_PRE + ":" + tagId.toString();
-            this.put(key, tagId.toString(), person, ConstantUtil.REDIS_DEFAULT_TTL);
+            String keyPre = ConstantUtil.PERSON_KEY_PRE;
+            String key = redisService.genRedisKey(keyPre, tagId.toString());
+
+            String str = JSON.toJSONString(person);
+            Map map = JSONObject.parseObject(str, Map.class);
+            redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
         }
     }
 
-    //hash删除缓存
     @Override
     public void delPersonCache(Long tagId) {
         if (tagId != null) {
-            String key = ConstantUtil.PERSON_KEY_PRE + ":" + tagId.toString();
-            this.remove(key, tagId.toString());
+            String key = redisService.genRedisKey(ConstantUtil.DEPARTMENT_KEY_PRE, tagId.toString());
+            redisService.delete(key);
         }
     }
+
+    private void updatePersonPolicy(Long tagId, String departmentCode) throws InterruptedException {
+        List<Strategy> strategies = strategyService.getStrategyByUserId(departmentCode);
+        //策略不为空,更新策略
+        if (strategies != null && strategies.size() > 0) {
+            this.addDptPolicy(tagId, strategies);
+        }
+    }
+
+    //删除人员的策略缓存和报警缓存，报警缓存有多种要全部删除
+    private void removeCache(Long personTagId) {
+        //不论是否有缓存都删除一次旧tag的策略，报警，人员缓存
+        //删除策略缓存
+        redisService.delete(ConstantUtil.POLICY_KEY_PRE, personTagId);
+        //删除报警缓存
+        redisService.delete(ConstantUtil.FENCE_ALARM_KEY_PRE, personTagId);
+        redisService.delete(ConstantUtil.HEART_ALARM_KEY_PRE, personTagId);
+        redisService.delete(ConstantUtil.POWER_ALARM_KEY_PRE, personTagId);
+        redisService.delete(ConstantUtil.SOS_ALARM_KEY_PRE, personTagId);
+        redisService.delete(ConstantUtil.WRISTLET_ALARM_KEY_PRE, personTagId);
+        redisService.delete(ConstantUtil.HEART_COUNT_KEY_PRE, personTagId);
+    }
+
+
+    //添加策略缓存,策略缓存最终要展开到带有tagId的人员上面
+    private void addDptPolicy(Long tagId, List<Strategy> strategies) {
+        for (Strategy strategy : strategies) {
+            String timeValue = strategy.getTimeValue();
+            String strategyCode = strategy.getStrategyCode();
+            List<String> timeValues = Arrays.asList(timeValue.split(","));
+            //构建策略缓存对象
+            RedisPolicy redisPolicy = new RedisPolicy();
+            redisPolicy.setStrategyCode(strategy.getStrategyCode());
+            redisPolicy.setFenceCode(strategy.getFenceCode());
+            redisPolicy.setStartTime(strategy.getStartTime());
+            redisPolicy.setFinishTime(strategy.getFinishTime());
+            redisPolicy.setForbidden(strategy.getForbidden());
+            redisPolicy.setLevel(strategy.getLevel());
+            redisPolicy.setTimeValues(timeValues);
+            redisPolicy.setTimeType(strategy.getTimeType());
+            redisPolicy.setUserType(strategy.getUserType());
+            redisPolicy.setAvailable(strategy.getAvailable());
+
+            //添加人员策略缓存
+            String key =redisService.genRedisKey(ConstantUtil.POLICY_KEY_PRE,tagId);
+            redisService.hashAdd(key,strategyCode,redisPolicy,ConstantUtil.REDIS_DEFAULT_TTL);
+        }
+
+    }
+
+
 }

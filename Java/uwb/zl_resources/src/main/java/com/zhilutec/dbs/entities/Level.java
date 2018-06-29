@@ -6,7 +6,7 @@ import java.util.List;
 
 @Table(name = "uwb_levels")
 public class Level extends Base{
-    private static final long serialVersionUID = 1L;
+
     private String levelName;//` varchar(16) DEFAULT NULL COMMENT '职称分类',
     private String levelCode;//` varchar(16) DEFAULT NULL,
     private String parentCode;//` varchar(16) DEFAULT NULL,

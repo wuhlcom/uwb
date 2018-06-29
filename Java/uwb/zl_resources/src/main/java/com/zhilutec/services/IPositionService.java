@@ -15,5 +15,4 @@ public interface IPositionService {
 
     String getPositionsRs();
 
-    void redisAdd(String keyPre, String leveCode, String obj);
 }

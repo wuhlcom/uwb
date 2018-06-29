@@ -1,12 +1,12 @@
 package com.zhilutec.services.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.pojos.UpgradeInfo;
 import com.zhilutec.common.pojos.VersionInfo;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.result.ResultCode;
 import com.zhilutec.common.utils.ConstantUtil;
-import com.zhilutec.common.utils.RestUtil;
 import com.zhilutec.common.utils.UpgradeValidator;
 import com.zhilutec.configs.UpgradeConfig;
 import com.zhilutec.netty.tcpServer.TcpHandler;
@@ -17,17 +17,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import javax.annotation.Resource;
 import java.util.Map;
 
 
 @Service
-public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IUpgradeService {
+public class UpgradeServiceImpl implements IUpgradeService {
 
     @Autowired
     TcpHandler tcpHandler;
 
     @Autowired
     UpgradeConfig upgradeConfig;
+
+    @Resource
+    IRedisService redisService;
+
+    @Override
+    public void initUpgradeStatus() {
+        redisService.delAll();
+        UpgradeInfo upgradeInfo = new UpgradeInfo();
+        upgradeInfo.setUpStatus(ConstantUtil.UPGRADE_STAT_DEFAULT);
+        upgradeInfo.setCmdType(ConstantUtil.UPGRADE_TYPE);
+        upgradeInfo.setCmdDir(ConstantUtil.UPGRADE_RESP);
+        upgradeInfo.setType(ConstantUtil.UPGRADE_MSG_TYPE);
+
+        String key = ConstantUtil.UPGRADE;
+        String str = JSON.toJSONString(upgradeInfo);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
+    }
+
 
     public Map<String, Channel> getActiveChannel() {
         Map<String, Channel> concurrentHashMap = TcpHandler.getSessionChMap();
@@ -51,17 +71,8 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
             channel.writeAndFlush(jsonObject.toJSONString());
         }
 
-        // Thread.sleep(500);
-        VersionInfo versionInfo = TcpHandler.getVersionInfo();
-        // String url = upgradeConfig.getUpgradeIP() + ":" + upgradeConfig.getUpgradePort() + upgradeConfig.getUpgradeApi();
-        //  Map<String, Object> serverInfo = RestUtil.getServerinfo(url);
-        // Integer errcode = (Integer) serverInfo.get("errcode");
-        // if (errcode.intValue() != ResultCode.SUCCESS.getCode()) {
-        //     return serverInfo.toString();
-        // }
-        // versionInfo.setServerIP((String) serverInfo.get("serverIP"));
-        // versionInfo.setServerPort((Integer) serverInfo.get("serverPort"));
 
+        VersionInfo versionInfo = TcpHandler.getVersionInfo();
         versionInfo.setServerIP(upgradeConfig.getUpgradeIP());
         versionInfo.setServerPort(upgradeConfig.getUpgradePort());
 
@@ -102,11 +113,11 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
             return Result.error("当前版本与升级的版本相同不需要升级").toJSONString();
         } else {
             UpgradeInfo upgradeInfoChange = new UpgradeInfo();
-            upgradeInfo.setUpStatus(ConstantUtil.UPGRADE_STAT_RUNN);
-            upgradeInfo.setCmdType(ConstantUtil.UPGRADE_TYPE);
-            upgradeInfo.setCmdDir(ConstantUtil.UPGRADE_RESP);
-            upgradeInfo.setType(ConstantUtil.UPGRADE_MSG_TYPE);
-            this.updateUpgradeStatus(ConstantUtil.UPGRADE, ConstantUtil.UPGRADE, upgradeInfoChange);
+            upgradeInfoChange.setUpStatus(ConstantUtil.UPGRADE_STAT_RUNN);
+            upgradeInfoChange.setCmdType(ConstantUtil.UPGRADE_TYPE);
+            upgradeInfoChange.setCmdDir(ConstantUtil.UPGRADE_RESP);
+            upgradeInfoChange.setType(ConstantUtil.UPGRADE_MSG_TYPE);
+            this.updateUpgradeStatus(upgradeInfoChange);
         }
 
         Map<String, Channel> concurrentHashMap = this.getActiveChannel();
@@ -133,30 +144,25 @@ public class UpgradeServiceImpl extends IRedisService<UpgradeInfo> implements IU
         }
 
         Thread.sleep(500);
-        // UpgradeInfo upgradeInfo1 = TcpHandler.getUpgradeInfo();
+
         UpgradeInfo upgradeInfo1 = this.getUpgradeStatus();
         return Result.ok(upgradeInfo1).toJSONString();
     }
 
-    @Override
-    public void updateUpgradeStatus(String key, String field, UpgradeInfo upgradeInfo) {
-        put(key, field, upgradeInfo, -1L);
-    }
-
-    @Override
-    public void initUpgradeStatus() {
-        flushDb();
-        UpgradeInfo upgradeInfo = new UpgradeInfo();
-        upgradeInfo.setUpStatus(ConstantUtil.UPGRADE_STAT_DEFAULT);
-        upgradeInfo.setCmdType(ConstantUtil.UPGRADE_TYPE);
-        upgradeInfo.setCmdDir(ConstantUtil.UPGRADE_RESP);
-        upgradeInfo.setType(ConstantUtil.UPGRADE_MSG_TYPE);
-        this.updateUpgradeStatus(ConstantUtil.UPGRADE, ConstantUtil.UPGRADE, upgradeInfo);
-    }
 
     private UpgradeInfo getUpgradeStatus() {
-        String jsonStr = get(ConstantUtil.UPGRADE, ConstantUtil.UPGRADE);
+        Map upgradeMap = redisService.hashGetMap(ConstantUtil.UPGRADE);
+        String jsonStr = JSONObject.toJSONString(upgradeMap);
         return JSONObject.parseObject(jsonStr, UpgradeInfo.class);
+    }
+
+
+    @Override
+    public void updateUpgradeStatus(UpgradeInfo upgradeInfo) {
+        String key = ConstantUtil.UPGRADE;
+        String str = JSON.toJSONString(upgradeInfo);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 
 }

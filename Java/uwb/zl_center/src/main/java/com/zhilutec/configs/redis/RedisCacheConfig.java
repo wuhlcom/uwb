@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
@@ -19,10 +20,16 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import java.lang.reflect.Method;
 
-
+/**
+ * 用JdkSerializationRedisSerializer序列化的话，被序列化的对象必须实现Serializable接口
+ *
+ * 如果需要保存对象为json的话推荐使用JacksonJsonRedisSerializer，它不仅可以将对象序列化，
+ * 还可以将对象转换为json字符串并保存到redis中，但需要和jackson配合一起使用。
+ * 用JacksonJsonRedisSerializer序列化的话，被序列化的对象不用实现Serializable接口。
+ */
 @Configuration
 @EnableCaching
-public class RedisCacheConfig {
+public class RedisCacheConfig extends CachingConfigurerSupport {
     @Value("${spring.redis.host}")
     private String host;
 
@@ -72,7 +79,6 @@ public class RedisCacheConfig {
         return jedisConnectionFactory;
     }
 
-
     @Bean
     public KeyGenerator keyGenerator() {
         return new KeyGenerator() {
@@ -89,24 +95,31 @@ public class RedisCacheConfig {
         };
     }
 
-
     @Bean
     public CacheManager cacheManager(RedisTemplate<?, ?> redisTemplate) {
-        CacheManager cacheManager = new RedisCacheManager(redisTemplate);
+        RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
         //设置缓存过期时间
-        //rcm.setDefaultExpiration(60);//秒
+        cacheManager.setDefaultExpiration(60);//秒
         return cacheManager;
     }
 
+    /**
+     * 字符串类数据，使用此类来处理
+     */
+    @Bean
+    StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
+        return new StringRedisTemplate(connectionFactory);
+    }
 
     /**
+     * 读取非序列化类时会出现
      * redisTemplate 序列化使用的jdkSerializeable, 存储二进制字节码, 所以自定义序列化类
      *
      * @param redisConnectionFactory
      * @return
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
@@ -116,35 +129,30 @@ public class RedisCacheConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+
         jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
 
         //开启事务支持
         redisTemplate.setEnableTransactionSupport(true);
 
-        // 设置value的序列化规则和 key的序列化规则
+        // 设置key的序列化规则
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 
-        redisTemplate.setValueSerializer(new EntityRedisSerializer());
-        // redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
-        redisTemplate.setHashValueSerializer(new EntityRedisSerializer());
-        // redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
-
+        // 设置自定义value的序列化规则
+        // redisTemplate.setValueSerializer(new EntityRedisSerializer());
+        // redisTemplate.setHashValueSerializer(new EntityRedisSerializer());
+        redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);
+        redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
-    }
-
-
-    @Bean
-    StringRedisTemplate template(RedisConnectionFactory connectionFactory) {
-        return new StringRedisTemplate(connectionFactory);
     }
 
     /**
      * 实例化 HashOperations 对象,可以使用 Hash 类型操作
      */
     @Bean
-    public HashOperations<String, String, Object> hashOperations(RedisTemplate<String, Object> redisTemplate) {
+    public HashOperations<?, ?, ?> hashOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForHash();
     }
 
@@ -152,7 +160,7 @@ public class RedisCacheConfig {
      * 实例化 ValueOperations 对象,可以使用 String 操作
      */
     @Bean
-    public ValueOperations<String, Object> valueOperations(RedisTemplate<String, Object> redisTemplate) {
+    public ValueOperations<?, ?> valueOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForValue();
     }
 
@@ -162,7 +170,7 @@ public class RedisCacheConfig {
      * @return
      */
     @Bean
-    public ListOperations<String, Object> listOperations(RedisTemplate<String, Object> redisTemplate) {
+    public ListOperations<?, ?> listOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForList();
     }
 
@@ -172,7 +180,7 @@ public class RedisCacheConfig {
      * @return
      */
     @Bean
-    public ListOperations<String, String> listStr(RedisTemplate<String, String> redisTemplate) {
+    public ListOperations<?, ?> listStr(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForList();
     }
 
@@ -181,7 +189,7 @@ public class RedisCacheConfig {
      * 实例化 SetOperations 对象,可以使用 Set 操作
      */
     @Bean
-    public SetOperations<String, Object> setOperations(RedisTemplate<String, Object> redisTemplate) {
+    public SetOperations<?, ?> setOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForSet();
     }
 
@@ -189,7 +197,7 @@ public class RedisCacheConfig {
      * 实例化 ZSetOperations 对象,可以使用 ZSet 操作
      */
     @Bean
-    public ZSetOperations<String, Object> zSetOperations(RedisTemplate<String, Object> redisTemplate) {
+    public ZSetOperations<?, ?> zSetOperations(RedisTemplate<?, ?> redisTemplate) {
         return redisTemplate.opsForZSet();
     }
 

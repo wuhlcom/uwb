@@ -2,36 +2,37 @@ package com.zhilutec.kafka;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 /**
- *spring.kafka.producer.listener=true
- *spring.kafka.producer.acks= all
- *spring.kafka.producer.bootstrapServers= 192.168.10.166:9092
- *spring.kafka.producer.bufferMemory= 33554432
- *spring.kafka.producer.clientId=producer-client
- *spring.kafka.producer.compressionType= none
- *spring.kafka.producer.batchSize= 16384
- *spring.kafka.producer.lingerMs = 0
- *spring.kafka.producer.retries= 2
- *spring.kafka.producer.defaultTopic=positions
+ * spring.kafka.producer.bootstrapServers=${kafka.ip}:${kafka.port}
+ * spring.kafka.producer.topic=${kafka.producer.topic}
+ * spring.kafka.producer.listener=true
+ * spring.kafka.producer.acks=all
+ * spring.kafka.producer.bufferMemory=33554432
+ * spring.kafka.producer.clientId=uwb-center-producer
+ * spring.kafka.producer.compressionType=gzip
+ * spring.kafka.producer.batchSize=16384
+ * spring.kafka.producer.lingerMs=10
+ * spring.kafka.producer.retries=2
+ * spring.kafka.producer.protocol=PLAINTEXTSASL/SASL/PLAINTEXT/SASL_SSL/SSL
  */
 @Component
 @Configuration
-@PropertySource(value = "classpath:kafkaProducer.properties")
+// @PropertySource(value = "classpath:kafkaProducer.properties")
 @ConfigurationProperties(prefix = "spring.kafka.producer")
 public class KafkaProducerProperty {
+    private String bootstrapServers;
+    private String topic;
     private Boolean listener;
     private String acks;
-    private String bootstrapServers;
     private String bufferMemory;
     private String clientId;
     private String compressionType;
     private String batchSize;
     private String lingerMs;
     private String retries;
-    private String defaultTopic;
+
     private String protocol;
 
     public Boolean getListener() {
@@ -106,25 +107,17 @@ public class KafkaProducerProperty {
         this.retries = retries;
     }
 
-    public String getDefaultTopic() {
-        return defaultTopic;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setDefaultTopic(String defaultTopic) {
-        this.defaultTopic = defaultTopic;
-    }
-
-    public String getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     @Override
     public String toString() {
-        return "KafkaConfig{" +
+        return "KafkaProducerProperty{" +
                 "listener=" + listener +
                 ", acks='" + acks + '\'' +
                 ", bootstrapServers='" + bootstrapServers + '\'' +
@@ -134,7 +127,7 @@ public class KafkaProducerProperty {
                 ", batchSize='" + batchSize + '\'' +
                 ", lingerMs='" + lingerMs + '\'' +
                 ", retries='" + retries + '\'' +
-                ", defaultTopic='" + defaultTopic + '\'' +
+                ", topic='" + topic + '\'' +
                 '}';
     }
 }

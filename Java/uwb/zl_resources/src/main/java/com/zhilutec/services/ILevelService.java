@@ -16,5 +16,4 @@ public interface ILevelService {
 
     String getlevel();
 
-    void redisAdd(String keyPre, String leveCode, String obj);
 }

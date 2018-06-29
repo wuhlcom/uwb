@@ -3,6 +3,7 @@ package com.zhilutec.common.utils;
 import com.zhilutec.dbs.entities.Warning;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ConstantUtil {
@@ -16,6 +17,9 @@ public class ConstantUtil {
     public static String DEPARTMENT_KEY_PRE = "DEPARTMENT";
     public static String LEVEL_KEY_PRE = "LEVEL";
     public static String POSITION_KEY_PRE = "POSITION";
+    public static String STATUS_KEY_PRE = "STATUS";
+    public static String COORDINATE_KEY_PRE = "COORDINATE";
+
     public static String FENCE_ALARM_KEY_PRE = "FENCE_ALARM";
     public static String HEART_ALARM_KEY_PRE = "HEART_ALARM";
     public static String POWER_ALARM_KEY_PRE = "POWER_ALARM";
@@ -23,6 +27,22 @@ public class ConstantUtil {
     public static String WRISTLET_ALARM_KEY_PRE = "WRISTLET_ALARM";
     public static String HEART_COUNT_KEY_PRE = "HEART_ALARM_COUNT";
 
+    public static List<String> REDIS_KEYS = Arrays.asList(POLICY_KEY_PRE,
+            PERSON_KEY_PRE,
+            FENCE_KEY_PRE,
+            DEPARTMENT_KEY_PRE,
+            LEVEL_KEY_PRE,
+            POSITION_KEY_PRE,
+            STATUS_KEY_PRE,
+            COORDINATE_KEY_PRE,
+            FENCE_ALARM_KEY_PRE,
+            HEART_ALARM_KEY_PRE,
+            POWER_ALARM_KEY_PRE,
+            SOS_ALARM_KEY_PRE,
+            WRISTLET_ALARM_KEY_PRE,
+            HEART_COUNT_KEY_PRE,
+            JWTUtil.ACCOUNT
+    );
 
     public static Integer ALARM_ON = 1;
     public static Integer ALARM_OFF = 0;

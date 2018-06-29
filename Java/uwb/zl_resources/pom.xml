@@ -39,6 +39,7 @@
 
         <fastjson.version>1.2.41</fastjson.version>
         <janino.version>3.0.7</janino.version>
+        <jjwt.version>0.7.0</jjwt.version>
 
         <redis.version>1.4.6.RELEASE</redis.version>
         <web.version>1.5.10.RELEASE</web.version>
@@ -134,6 +135,14 @@
             <version>${commons.lang3.version}</version>
         </dependency>
 
+        <!-- jjwt -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+
         <!--<dependency>-->
             <!--<groupId>org.springframework.cloud</groupId>-->
             <!--<artifactId>spring-cloud-starter-eureka-server</artifactId>-->
@@ -150,17 +159,17 @@
         <!--</dependency>-->
     </dependencies>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <!--<dependencyManagement>-->
+        <!--<dependencies>-->
+            <!--<dependency>-->
+                <!--<groupId>org.springframework.cloud</groupId>-->
+                <!--<artifactId>spring-cloud-dependencies</artifactId>-->
+                <!--<version>${spring-cloud.version}</version>-->
+                <!--<type>pom</type>-->
+                <!--<scope>import</scope>-->
+            <!--</dependency>-->
+        <!--</dependencies>-->
+    <!--</dependencyManagement>-->
 
 	<build>
 		<plugins>

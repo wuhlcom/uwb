@@ -19,7 +19,6 @@
       <div ref="viewBox" class="viewBox">
         <div
           ref="map"
-          :style="imgSize"
           data-panning="false"
           @mousedown="onPanStart($event)"
           @mousemove="onPanning($event)"
@@ -174,11 +173,11 @@ export default {
       ratioRectangle: [], // 计算比例后的区域
       polygon: [],
       ratioPolygon: [],
-      isAreaShow: false,
-      isTrackShow: false,
-      isNameShow: false,
-      isGridsShow: false,
-      isStatusShow: true,
+      isAreaShow: false, // 区域显示
+      isTrackShow: false, // 轨迹显示
+      isNameShow: false, // 名字显示
+      isGridsShow: false,  // 标尺显示
+      isStatusShow: true, // 状态显示
       pitchOn: [],
       a: 0, // 当websockt接收到数据时a加一，位置显示的子组件监听到a变化时对canvas进行重绘
       imgUrl: "",
@@ -298,7 +297,7 @@ export default {
             lastTf + " scale(" + newScale + "," + newScale + ")";
         } else {
           chart.style.transform =
-            lastTf + " scale3d(" + newScale + "," + newScale + ", 1)";
+          lastTf + " scale3d(" + newScale + "," + newScale + ", 1)";
         }
       }
       chart.dataset.scale = newScale;
@@ -347,13 +346,20 @@ export default {
     areaShowFn(msg) {
       this.isAreaShow = msg
     },
+    /**
+     * 轨迹显示
+     * 当选择为不显示时，只保留最后一个位置点
+     * @param {Boolean} msg
+     */
     trackShowFn(msg) {
       this.isTrackShow = msg
       if (!msg) {
         this.allPerson.forEach(e => {
-          let i = e.point.pop()
-          e.point = []
-          e.point.push(i)
+          if (e.point.length) {
+            let i = e.point.pop()
+            e.point = []
+            e.point.push(i)
+          }
         })
       }
       this.a++
@@ -436,7 +442,7 @@ export default {
       if (window.location.port === '9999') {
         return 'ws://192.168.10.232:80/coordinate/coors';
       }
-      return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/coordinate/coors'
+      return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/uwb/websocket/wsmsg'
     },
     webSowcket() {
       let ws = new WebSocket(this.getWebSocketURL())
@@ -455,20 +461,22 @@ export default {
               };
               el.positionName = e.positionName
               el.levelName = e.levelName
+              // 心率值为255时显示 ‘--’
               if(e.heartRate === 255) {
                 el.heartRate = '--'
               } else {
                 el.heartRate = e.heartRate
               }
+              // 电量值为255时显示 ‘--’
               if (e.power === 255) {
                 el.power = '--'
               } else {
                 el.power = e.power
               }
               /* 
-              * 轨迹点最多保存60个，当等于60个时删除第一个并增加一个点
-              * isTrackShow用来判断是否显示轨迹
-              */
+               * 轨迹点最多保存60个，当等于60个时删除第一个并增加一个点
+               * isTrackShow用来判断是否显示轨迹
+               */
               if (this.isTrackShow) {
                 if (el.point.length < 60) {
                   el.point.push(point)
@@ -480,6 +488,7 @@ export default {
                 el.point.splice(0, 60)
                 el.point.push(point)
               }
+              // 名字的显示位置
               el.namePosition = {
                 x: e.posX * this.proportion.width,
                 y: e.posY * this.proportion.height,
@@ -554,8 +563,8 @@ export default {
       this.setCanvasSize()
     },
     /* 
-    * 监听左侧导航栏是否显示，当侧栏不显示时，图片展示区域会放大，这是需要改变canvas的大小
-    */
+     * 监听左侧导航栏是否显示，当侧栏不显示时，图片展示区域会放大，这是需要改变canvas的大小
+     */
     navShow() {
       // 如果不使用setTimeout的话，当图片变化时canvas的大小赋值会不同步
       setTimeout(() => {

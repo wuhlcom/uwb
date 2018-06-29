@@ -11,7 +11,6 @@ import java.util.List;
 @Table(name = "uwb_strategies")
 public class Strategy extends Base {
 
-    private static final long serialVersionUID = 1L;
 
     private String strategyName;//` varchar(128) DEFAULT NULL COMMENT '策略名',
     private String strategyCode;//` varchar(64) DEFAULT NULL COMMENT '策略编号',
@@ -48,9 +47,6 @@ public class Strategy extends Base {
     @Transient
     private List parentCodes;
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
 
     public String getStrategyName() {
         return strategyName;

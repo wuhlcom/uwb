@@ -22,10 +22,10 @@ public class KafkaConsumerBatchListener {
      */
     @KafkaListener(topics = "${spring.kafka.consumer.topic}", containerFactory = "kafkaListenerContainerFactory")
     public void listener(List<ConsumerRecord<String, String>> records, Acknowledgment ack) {
-        // logger.info("---------批量Poll到的数组大小:" + records.size() + "-------");
-        // for (ConsumerRecord<?, ?> record : records) {
-        //     System.out.println(record.value());
-        // }
+        logger.info("---------批量Poll到的数组大小:" + records.size() + "-------");
+        for (ConsumerRecord<?, ?> record : records) {
+            logger.info("==value:{}", record.value());
+        }
         try {
             kafkaService.batchSave(records);
         } catch (Exception e) {

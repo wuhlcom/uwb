@@ -25,13 +25,16 @@ import javax.annotation.Resource;
 import java.util.*;
 
 @Service
-public class FenceServiceImpl extends IRedisService<Fence> implements IFenceService {
+public class FenceServiceImpl implements IFenceService {
 
     @Autowired
     FenceDao fenceDao;
 
     @Resource
     IStrategyService strategyService;
+
+    @Resource
+    IRedisService redisService;
 
 
     @Override
@@ -41,10 +44,11 @@ public class FenceServiceImpl extends IRedisService<Fence> implements IFenceServ
         criteria.andEqualTo("isdel", 1);
         List<Fence> fences = fenceDao.selectByExample(example);
         for (Fence fence : fences) {
-            String fenceCode = fence.getFenceCode();
-            //将区域添加到缓存中
-            String key = ConstantUtil.FENCE_KEY_PRE + ":" + fenceCode;
-            this.put(key, fenceCode, fence, ConstantUtil.REDIS_DEFAULT_TTL);
+            // String fenceCode = fence.getFenceCode();
+            // //将区域添加到缓存中
+            // String key = ConstantUtil.FENCE_KEY_PRE + ":" + fenceCode;
+            // this.put(key, fenceCode, fence, ConstantUtil.REDIS_DEFAULT_TTL);
+            this.addFenceCache(fence);
         }
     }
 
@@ -110,8 +114,9 @@ public class FenceServiceImpl extends IRedisService<Fence> implements IFenceServ
                 return Result.error("添加区域失败").toJSONString();
             } else {
                 //将区域添加到缓存中
-                String key = ConstantUtil.FENCE_KEY_PRE + ":" + uuid;
-                this.put(key, uuid, record, ConstantUtil.POLICY_TIMEOUT);
+                // String key = ConstantUtil.FENCE_KEY_PRE + ":" + uuid;
+                // this.put(key, uuid, record, ConstantUtil.POLICY_TIMEOUT);
+                this.addFenceCache(record);
                 return Result.ok(ResultCode.SUCCESS).toJSONString();
             }
         } else {
@@ -183,7 +188,7 @@ public class FenceServiceImpl extends IRedisService<Fence> implements IFenceServ
                         }
                     } else if (policyType == 3) {
                         //未绑定策略
-                        List<Strategy> strategies = strategyService.getStrategiesByFenceCode(fence.getFenceCode(),null);
+                        List<Strategy> strategies = strategyService.getStrategiesByFenceCode(fence.getFenceCode(), null);
                         if (strategies == null || strategies.isEmpty()) {
                             newFences.add(fence);
                         }
@@ -247,8 +252,7 @@ public class FenceServiceImpl extends IRedisService<Fence> implements IFenceServ
         if (rs > 0) {
             //删除区域缓存
             for (Object fenceCode : fenceCodes) {
-                String key = ConstantUtil.FENCE_KEY_PRE + ":" + fenceCode;
-                this.remove(key, fenceCode.toString());
+                deleteFenceCache(fenceCode.toString());
             }
             return Result.ok("删除区域成功").toJSONString();
         } else {
@@ -271,8 +275,19 @@ public class FenceServiceImpl extends IRedisService<Fence> implements IFenceServ
         return fenceDao.selectByExample(example);
     }
 
-    @Override
-    protected String getRedisKey() {
-        return null;
+
+    private void addFenceCache(Fence fence) {
+        String fenceCode = fence.getFenceCode();
+        //将区域添加到缓存中
+        String keyPre = ConstantUtil.FENCE_KEY_PRE;
+        String key = redisService.genRedisKey(keyPre, fenceCode);
+        String str = JSON.toJSONString(fence);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
+    }
+
+    private void deleteFenceCache(String fenceCode) {
+        String key = redisService.genRedisKey(ConstantUtil.DEPARTMENT_KEY_PRE, fenceCode);
+        redisService.delete(key);
     }
 }

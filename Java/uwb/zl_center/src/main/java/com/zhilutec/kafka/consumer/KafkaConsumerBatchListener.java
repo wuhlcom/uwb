@@ -1,9 +1,14 @@
 package com.zhilutec.kafka.consumer;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.dbs.entities.Coordinate;
 import com.zhilutec.dbs.entities.Warning;
 import com.zhilutec.kafka.producer.KafkaProducerListener;
+import com.zhilutec.kafka.producer.KafkaProducerProperty;
 import com.zhilutec.services.IKafkaService;
+import com.zhilutec.services.ZkService;
+import com.zhilutec.services.impl.ZkServiceImpl;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,20 +26,17 @@ import java.util.Map;
 public class KafkaConsumerBatchListener {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${spring.kafka.producer.topic1}")
-    private String coordinateTopic;
-
-    @Value("${spring.kafka.producer.topic2}")
-    private String alarmTopic;
-
-    @Value("${spring.kafka.consumer.topic}")
-    private String consumerTopic;
+    @Value("${spring.kafka.producer.topic}")
+    private String uwbCenterTopic;
 
     @Resource
     private IKafkaService kafkaService;
 
     @Autowired
     private KafkaTemplate kafkaTemplate;
+
+    @Resource
+    private ZkService zkService;
 
     /**
      * 批量处理
@@ -43,23 +45,16 @@ public class KafkaConsumerBatchListener {
     public void listener(List<ConsumerRecord<String, String>> records, Acknowledgment ack) {
         logger.info("--------consumer-批量Poll到的数组大小:" + records.size() + "-------");
         for (ConsumerRecord<String, String> record : records) {
-            logger.info(record.value());
+            logger.info("-----consumer data:{}", record.value());
         }
         //debug
         kafkaTemplate.setProducerListener(new KafkaProducerListener());
         try {
             Map<String, Object> msgMap = kafkaService.handlePoints(records);
-            if (msgMap != null) {
-                List<Coordinate> coordinates = (List<Coordinate>) msgMap.get("coordinates");
-                if (coordinates != null && coordinates.size() > 0) {
-                    kafkaTemplate.send(coordinateTopic, coordinates.toString());
-                }
-
-
-                List<Warning> warnings = (List<Warning>) msgMap.get("warnings");
-                if (warnings != null && warnings.size() > 0) {
-                    kafkaTemplate.send(alarmTopic, warnings.toString());
-                }
+            if (msgMap != null && !msgMap.isEmpty()) {
+                String jsonStr = JSON.toJSONString(msgMap);
+                // kafkaTemplate.send(uwbCenterTopic, jsonStr);
+                zkService.sendToNeighbor(jsonStr, uwbCenterTopic);
             }
         } catch (Exception e) {
             e.printStackTrace();

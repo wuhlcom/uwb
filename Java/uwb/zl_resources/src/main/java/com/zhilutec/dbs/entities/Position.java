@@ -4,7 +4,7 @@ import javax.persistence.Table;
 
 @Table(name="uwb_positions")
 public class Position extends Base{
-    private static final long serialVersionUID = 1L;
+
     private String positionName;//` varchar(32) DEFAULT NULL,
     private String positionCode;//` varchar(32) DEFAULT NULL,
     private String remark;

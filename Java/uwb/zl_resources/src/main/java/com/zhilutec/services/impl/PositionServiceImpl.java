@@ -1,25 +1,31 @@
 package com.zhilutec.services.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.dbs.daos.PositionDao;
-import com.zhilutec.dbs.entities.Fence;
 import com.zhilutec.dbs.entities.Level;
 import com.zhilutec.dbs.entities.Position;
 import com.zhilutec.services.IPositionService;
-import com.zhilutec.services.IRedisTService;
+import com.zhilutec.services.IRedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 
 @Service
-public class PositionServiceImpl extends IRedisTService<String> implements IPositionService {
+public class PositionServiceImpl implements IPositionService {
 
     @Autowired
     PositionDao positionDao;
+
+
+    @Resource
+    IRedisService redisService;
 
     @Override
     public void positionCacheInit() {
@@ -28,9 +34,10 @@ public class PositionServiceImpl extends IRedisTService<String> implements IPosi
         criteria.andEqualTo("isdel", 1);
         List<Position> positions = positionDao.selectByExample(example);
         for (Position position : positions) {
-            String positionCode = position.getPositionCode();
-            //将级别添加到缓存中
-            this.redisAdd(ConstantUtil.POSITION_KEY_PRE, positionCode, JSON.toJSONString(position));
+            // String positionCode = position.getPositionCode();
+            // //将级别添加到缓存中
+            // this.redisAdd(ConstantUtil.POSITION_KEY_PRE, positionCode, JSON.toJSONString(position));
+            this.addPositionCache(position);
         }
     }
 
@@ -53,15 +60,16 @@ public class PositionServiceImpl extends IRedisTService<String> implements IPosi
         return Result.ok(positions).toJSONString();
     }
 
-    @Override
-    protected String getRedisKey(String keyPre, Object obj) {
-        return keyPre + ":" + obj.toString();
-    }
 
-    @Override
-    public void redisAdd(String keyPre, String leveCode, String obj) {
-        String key = this.getRedisKey(keyPre, leveCode);
-        this.set(key, obj, ConstantUtil.REDIS_DEFAULT_TTL);
+    private void addPositionCache(Position position) {
+        String positionCode = position.getPositionCode();
+        //将区域添加到缓存中
+        String keyPre = ConstantUtil.POSITION_KEY_PRE;
+        String key = redisService.genRedisKey(keyPre, positionCode);
+
+        String str = JSON.toJSONString(position);
+        Map map = JSONObject.parseObject(str, Map.class);
+        redisService.hashAddMap(key, map, ConstantUtil.REDIS_DEFAULT_TTL);
     }
 
 

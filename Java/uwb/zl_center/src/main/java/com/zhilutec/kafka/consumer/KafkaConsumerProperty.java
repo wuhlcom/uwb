@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-@PropertySource(value = "classpath:kafkaConsumer.properties")
+// @PropertySource(value = "classpath:kafkaConsumer.properties")
 @ConfigurationProperties(prefix = "spring.kafka.consumer")
 public class KafkaConsumerProperty {
 
@@ -38,7 +38,7 @@ public class KafkaConsumerProperty {
     private Long ackTime;
     private Integer concurrency;
     private Long pollTimeout;
-    private String defaultTopic;
+    private String topic;
     private Boolean batchListener;
     private String sessionTimeout;
 
@@ -130,12 +130,12 @@ public class KafkaConsumerProperty {
         this.pollTimeout = pollTimeout;
     }
 
-    public String getDefaultTopic() {
-        return defaultTopic;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setDefaultTopic(String defaultTopic) {
-        this.defaultTopic = defaultTopic;
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 
     public Boolean getBatchListener() {
@@ -156,7 +156,7 @@ public class KafkaConsumerProperty {
 
     @Override
     public String toString() {
-        return "KafkaConfig{" +
+        return "KafkaConsumerProperty{" +
                 "autoOffsetReset='" + autoOffsetReset + '\'' +
                 ", bootstrapServers='" + bootstrapServers + '\'' +
                 ", clientId='" + clientId + '\'' +
@@ -168,7 +168,7 @@ public class KafkaConsumerProperty {
                 ", ackTime=" + ackTime +
                 ", concurrency=" + concurrency +
                 ", pollTimeout=" + pollTimeout +
-                ", defaultTopic='" + defaultTopic + '\'' +
+                ", topic='" + topic + '\'' +
                 ", batchListener=" + batchListener +
                 ", sessionTimeout='" + sessionTimeout + '\'' +
                 '}';
