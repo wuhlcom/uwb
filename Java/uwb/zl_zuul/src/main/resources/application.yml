@@ -1,0 +1,68 @@
+#properties配置文件无法使用，只能使用yml
+server:
+  port: 8765
+
+eureka:
+  server:
+      ip: 192.168.10.232
+      port: 8761
+  client:
+    serviceUrl:
+      defaultZone: http://${eureka.server.ip}:${eureka.server.port}/eureka/
+#      间隔多久去拉取服务注册信息
+      registry-fetch-interval-seconds: 10
+  instance:
+#    等待下一次心跳的超时时间
+#该值至少应该大于leaseRenewalIntervalInSeconds
+    lease-expiration-duration-in-seconds: 60
+#    发送心跳给server端的频率
+    lease-renewal-interval-in-seconds: 30
+    prefer-ip-address: true
+
+spring:
+  application:
+    name: zuul
+
+zuul:
+  host:
+    socket-timeout-millis: 30000
+    connect-timeout-millis: 30000
+  routes:
+    resources:
+      url:
+      path: /uwb/resources/**
+      serviceId: resources
+      stripPrefix: false
+    fastdfs:
+      url:
+      path: /uwb/fastdfs/**
+      serviceId: fastdfs
+      stripPrefix: false
+    producer:
+      url:
+      path: /uwb/producer/**
+      serviceId: producer
+      stripPrefix: false
+    websocket:
+      url:
+      path: /uwb/websocket/**
+      serviceId: websocket
+      stripPrefix: false
+#设置API网关中路由转发请求的HystrixCommand执行超时时间
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 120000
+ribbon:
+ #设置路由转发请求的时候，创建请求连接的超时时间
+  ConnectTimeout: 30000
+  #用来设置路由转发请求的超时时间
+  ReadTimeout: 30000
+#  eureka:
+#    enabled: false
+
+
+

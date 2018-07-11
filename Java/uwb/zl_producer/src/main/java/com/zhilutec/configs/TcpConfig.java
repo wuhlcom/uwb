@@ -1,8 +1,11 @@
 package com.zhilutec.configs;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
+
+import java.util.logging.Logger;
 
 /**
  * tcp server 参数配置
@@ -16,11 +19,16 @@ import org.springframework.stereotype.Component;
  *tcp.soRcvbuf=1048576
  *tcp.soSndbuf=1048576
  */
-@Component
+
+@Component()
 @PropertySource(value= "classpath:nettyServer.properties")
 @ConfigurationProperties(prefix="tcp")
 public class TcpConfig {
-    private int port;
+	public TcpConfig() {
+
+	}
+
+	private int port;
     private int bossThreadCount;
     private int workerThreadCount;
     private boolean soKeepAlive;

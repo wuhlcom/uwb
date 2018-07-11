@@ -30,7 +30,7 @@
             ref="upload"
             :limit="1"
             :data="{name: form.name, type: form.type}"
-            action="fastdfs/fdfs/upload"
+            :action="this.$url.upImg"
             :on-success="close"
             :file-list="fileList"
             :on-change="fileStatus"
@@ -230,8 +230,6 @@ export default {
     upError (err, file, fileList) {
       
     }
-  },
-  created() {
   },
   watch: {
     strategyUserId(val) {

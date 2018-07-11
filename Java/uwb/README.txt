@@ -4,12 +4,25 @@
    zl_alarm_save zl_coordinate合并到zl_storage
    zl_permission合并到zl_resources
    zl_alarm,zl_coordinate合并到zl_websocket
-3 加入了mia平台的部署时的kakfa和zookeeper相关的配置，jar，依赖包
+3 加入了mia平台的部署时的kakfa和zookeeper相关的配置jar，依赖包
 4 服务端口列表 
-11000
-11001
-11002
-11003
-11004
-11005
-11006
+
+fastdfs 11001
+resources 11003
+
+producer 11002 9922--要对外网暴露此端口
+websocket 11006
+
+center 11000
+status_save 11004
+storage 11005
+
+
+screen -S uwb_test 创建screen 
+
+screen -R uwb_test 重新登录screen
+
+ctrl+a+d 关掉screen
+
+
+

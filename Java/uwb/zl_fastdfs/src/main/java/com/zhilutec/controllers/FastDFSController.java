@@ -31,9 +31,11 @@ public class FastDFSController {
     @Resource
     IFileService fileService;
 
+
+    // public String fileUpload(HttpServletRequest request) {
+    // MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
     @RequestMapping(value = "/upload", method = {RequestMethod.POST}, produces = "application/json;charset=UTF-8")
-    public String fileUpload(HttpServletRequest request) {
-        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+    public String fileUpload(MultipartHttpServletRequest multipartRequest) {
         try {
             return fastDFSFileService.uploadFdfsFileRs(multipartRequest);
         } catch (Exception e) {

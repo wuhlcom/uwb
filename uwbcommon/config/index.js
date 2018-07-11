@@ -15,28 +15,28 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/resources': {
-        target: 'http://' + url.url + '/resources',
+        target: 'http://' + url.url + '/uwb/resources',
         changeOrigin: true,
         pathRewrite: {
           '^/resources': ''
         }
       },
       '/fastdfs': {
-        target: 'http://' + url.url + '/fastdfs',
+        target: 'http://' + url.url + '/uwb/fastdfs',
         changeOrigin: true,
         pathRewrite: {
           '^/fastdfs': ''
         }
       },
       '/producer': {
-        target: 'http://' + url.url + '/producer',
+        target: 'http://' + url.url + '/uwb/producer',
         changeOrigin: true,
         pathRewrite: {
           '^/producer': ''
         }
       },
       '/permission': {
-        target: 'http://' + url.url + '/permission',
+        target: 'http://' + url.url + '/uwb/permission',
         changeOrigin: true,
         pathRewrite: {
           '^/permission': ''

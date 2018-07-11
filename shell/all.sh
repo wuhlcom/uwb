@@ -10,6 +10,7 @@
 set -e
 #set -u
 SHELL_HOME=/etc/init.d
+SCRIPT_NAME=${SHELL_HOME}/all.sh
 
 d_start(){
  ${SHELL_HOME}/zookeeper.sh start
@@ -19,18 +20,17 @@ d_start(){
  ${SHELL_HOME}/fdfs_trackerd start
  ${SHELL_HOME}/fdfs_storaged start
  ${SHELL_HOME}/services.sh start 
- ${SHELL_HOME}/alrtls.sh start 
+ # ${SHELL_HOME}/alrtls.sh start 
 }
 
 case "$1" in
   start)
-    echo -n "Starting Kafka:"
+    echo -n "Starting all:"
 	d_start
     echo " done."
-    exit 0
     ;;  
   *)
-    echo "Usage: kafka {start}"
+    echo "Usage: ${SCRIPT_NAME} {start}"
     exit 1
     ;;
 esac

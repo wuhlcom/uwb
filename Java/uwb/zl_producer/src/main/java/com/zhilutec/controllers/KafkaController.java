@@ -2,8 +2,8 @@ package com.zhilutec.controllers;
 
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.result.ResultCode;
-import com.zhilutec.kafka.KafkaProducerProperty;
-import com.zhilutec.kafka.KafkaProducerListener;
+import com.zhilutec.kafka.producer.KafkaProducerProperty;
+import com.zhilutec.kafka.producer.KafkaProducerListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -42,7 +42,6 @@ public class KafkaServiceImpl implements IKafkaService {
             Integer type = msgObj.getInteger("type");
             //只处理type 7 消息
             if (type == ConstantUtil.ENGINE_STATUS) {
-                logger.info("save status msg:" + kafkaMsg);
                 Status status = JSONObject.parseObject(msgObj.toJSONString(), Status.class);
                 Person person = personService.getCache(status.getTagId());
                 if (person != null) {
@@ -51,6 +50,8 @@ public class KafkaServiceImpl implements IKafkaService {
                         status.setPersonName(person.getPersonName());
                         statuses.add(status);
                     }
+                }else {
+                    logger.info("person tagId not found!");
                 }
             }
         }

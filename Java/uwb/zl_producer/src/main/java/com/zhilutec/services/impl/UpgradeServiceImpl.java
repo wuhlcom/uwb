@@ -49,9 +49,11 @@ public class UpgradeServiceImpl implements IUpgradeService {
     }
 
 
+    @Override
     public Map<String, Channel> getActiveChannel() {
         Map<String, Channel> concurrentHashMap = TcpHandler.getSessionChMap();
         for (Map.Entry<String, Channel> entry : concurrentHashMap.entrySet()) {
+            //去除无效会话
             if (!entry.getValue().isActive()) {
                 concurrentHashMap.remove(entry.getKey());
             }
@@ -61,17 +63,19 @@ public class UpgradeServiceImpl implements IUpgradeService {
 
     @Override
     public String getVersion() {
+        //获取tcp会话
         Map<String, Channel> concurrentHashMap = this.getActiveChannel();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("cmd_type", "check_ver");
         jsonObject.put("cmd_dir", "query");
 
+        //通过tcp channel发送请求,获取版本信息
         for (Map.Entry<String, Channel> entry : concurrentHashMap.entrySet()) {
             Channel channel = entry.getValue();
             channel.writeAndFlush(jsonObject.toJSONString());
         }
 
-
+        //获取版本信息
         VersionInfo versionInfo = TcpHandler.getVersionInfo();
         versionInfo.setServerIP(upgradeConfig.getUpgradeIP());
         versionInfo.setServerPort(upgradeConfig.getUpgradePort());

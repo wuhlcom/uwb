@@ -1,0 +1,111 @@
+server:
+  port: 8765
+
+mysql:
+  ip: 192.168.10.232
+  port: 3306
+  username: root
+  password: root
+
+redis:
+  ip: 192.168.10.232
+  port: 6379
+  password: uwb!2018@0511_zl
+
+eureka:
+  server:
+      ip: 192.168.10.232
+      port: 8761
+  client:
+    serviceUrl:
+      defaultZone: http://${eureka.server.ip}:${eureka.server.port}/eureka/
+  instance:
+    lease-expiration-duration-in-seconds: 10
+    lease-renewal-interval-in-seconds: 60
+    prefer-ip-address: true
+
+spring:
+  application:
+    name: zuul
+  datasource:
+    url: jdbc:mysql://${mysql.ip}:${mysql.port}/uwb?useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useAffectedRows=true&&useSSL=false
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    username: ${mysql.username}
+    password: ${mysql.password}
+    initial-size: 5
+    minIdle: 5
+    maxActive: 20
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: SELECT 'x'
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    filters: stat,wall,log4j
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  redis:
+    # Redis数据库索引（默认为0）
+    database: 6
+    host: ${redis.ip}
+    port: ${redis.port}
+    password: ${redis.password}
+    pool:
+      # 连接池最大连接数（使用负值表示没有限制）
+      max-active: 100
+      # 连接池最大阻塞等待时间（使用负值表示没有限制）
+      max-wait: -1
+      # 连接池中的最大空闲连接
+      max-idle: 10
+      # 连接池中的最小空闲连接
+      min-idle: 0
+    # 连接超时时间（毫秒）
+    timeout: 0
+  data:
+    redis:
+      repositories:
+        enabled: true
+
+zuul:
+  routes:
+    resources:
+      url:
+      path: /uwb/resources/**
+      serviceId: resources
+      stripPrefix: false
+    fastdfs:
+      url:
+      path: /uwb/fastdfs/**
+      serviceId: fastdfs
+      stripPrefix: false
+    producer:
+      url:
+      path: /uwb/producer/**
+      serviceId: producer
+      stripPrefix: false
+    websocket:
+      url:
+      path: /uwb/websocket/**
+      serviceId: websocket
+      stripPrefix: false
+
+#设置API网关中路由转发请求的HystrixCommand执行超时时间
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 1320000
+ribbon:
+#设置路由转发请求的时候，创建请求连接的超时时间
+  ConnectTimeout: 3000
+  #用来设置路由转发请求的超时时间
+  ReadTimeout: 60000
+#  禁用Eureka对Ribbon服务实例的维护实现。防止侵入性
+#转发到多个外部服务器，则需要配置集群
+  eureka:
+    enabled: false
+
+

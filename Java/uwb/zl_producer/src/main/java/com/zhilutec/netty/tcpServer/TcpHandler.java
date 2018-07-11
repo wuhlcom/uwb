@@ -1,43 +1,35 @@
 package com.zhilutec.netty.tcpServer;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.common.pojos.UpgradeInfo;
 import com.zhilutec.common.pojos.VersionInfo;
-import com.zhilutec.common.utils.ConstantUtil;
-import com.zhilutec.kafka.KafkaProducerListener;
+import com.zhilutec.common.utils.ChangeCharsetUtil;
+import com.zhilutec.kafka.producer.KafkaProducerListener;
 import com.zhilutec.services.IUpgradeService;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
+import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.JSON;
-
-import com.alibaba.fastjson.JSONObject;
-import com.zhilutec.common.utils.ChangeCharsetUtil;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.IdleState;
-import io.netty.handler.timeout.IdleStateEvent;
-
-
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 @Component
 public class TcpHandler extends ChannelInboundHandlerAdapter {
-
+  
     public static TcpHandler tcpHandler;
     //保存tcp session
     private static Map<String, Channel> SESSION_CH_MAP = new ConcurrentHashMap<String, Channel>();
@@ -94,15 +86,13 @@ public class TcpHandler extends ChannelInboundHandlerAdapter {
         Channel channel = ctx.channel();
         ChannelId channelId = channel.id();
         SESSION_CH_MAP.put(channelId.asShortText(), channel);
-        logger.info(message);
     }
 
     // 读取tcp client消息并返回响应
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         Long timeMillis = System.currentTimeMillis() / 1000;
-//        System.out.println(msg.toString());
-        ChangeCharsetUtil strChange = new ChangeCharsetUtil();
+       ChangeCharsetUtil strChange = new ChangeCharsetUtil();
         String receiveMsg = strChange.toUTF_8(msg.toString());
         try {
             // tcp client将消息转为json对象

@@ -72,6 +72,73 @@ public class KafkaServiceImpl implements IKafkaService {
     @Resource
     protected HashOperations<String, String, Integer> hashOperations;
 
+    @Override
+    public Map<String, Object> handlePoints(List<ConsumerRecord<String, String>> records) throws InterruptedException {
+        Integer alarm = 2;
+        Map<String, Object> resultMap = new HashMap();
+        List<Coordinate> coordinates = new ArrayList<>();
+        List<Warning> warnings = new ArrayList<>();
+        for (ConsumerRecord<String, String> record : records) {
+            String kafkaMsg = record.value().toString();
+            JSONObject msgObj = JSON.parseObject(kafkaMsg);
+            Integer type = msgObj.getInteger("type");
+
+            //只处理type 2 消息
+            if (type == ConstantUtil.ENGINE_COOR) {
+                Coordinate coordinate = JSON.parseObject(record.value().toString(), Coordinate.class);
+                Map rsMap = this.handlePoint(coordinate);
+                if (rsMap != null) {
+                    Coordinate coordinate1 = (Coordinate) rsMap.get("coordinate");
+                    List<Warning> warnings1 = (List<Warning>) rsMap.get("warnings");
+                    if (coordinate1 != null)
+                        coordinates.add(coordinate1);
+                    if (warnings1 != null && warnings1.size() > 0) {
+                        warnings.addAll(warnings1);
+                    }
+                    if (warnings.size() > 0) {
+                        for (Warning warning : warnings1) {
+                            if (warning.getOp() == ConstantUtil.ALARM_ON) {
+                                alarm = ConstantUtil.ALARM_ON;
+                                break;
+                            } else {
+                                alarm = ConstantUtil.ALARM_OFF;
+                            }
+                        }
+                    }
+                }
+            } else if (type == ConstantUtil.ENGINE_ARLARM) {
+                //兼容定位引擎直接上报的报警
+                // this.handleAlarm(coordinates, warnings, msgObj);
+            } else if (type == ConstantUtil.ENGINE_STATUS) {
+                //处理状态消息
+                List<Warning> statusWarnings = this.handleStatus(msgObj);
+                if (statusWarnings != null && statusWarnings.size() > 0) {
+                    warnings.addAll(statusWarnings);
+                }
+            }
+        }
+
+        List<String> coorStr = new ArrayList<>();
+        if (coordinates != null && coordinates.size() > 0) {
+            for (Coordinate coor : coordinates) {
+                coorStr.add(JSON.toJSONString(coor));
+            }
+        }
+
+        List<String> warningStr = new ArrayList<>();
+        if (warnings != null && warnings.size() > 0) {
+            for (Warning warning : warnings) {
+                warningStr.add(JSON.toJSONString(warning));
+            }
+        }
+
+        resultMap.put("alarm", alarm);
+        resultMap.put("coordinates", coorStr);
+        resultMap.put("warnings", warningStr);
+        return resultMap;
+    }
+
+
     /**
      * 根据坐标点，与区域，策略的关系来判断是否报警
      */
@@ -100,9 +167,6 @@ public class KafkaServiceImpl implements IKafkaService {
         Integer currWeek = ZlTimeUtil.getWeek(timestamp * 1000) - 1;
         //从坐标消息中 提取时间
         Time currTime = ZlTimeUtil.getTime(timestamp * 1000);
-
-        //调取策略缓存
-        // List<RedisPolicy> redisPolicies = strategyService.getRedisPolicies(tagId);
 
         //当redisPolicies为null再查询一次
         //调取策略缓存
@@ -139,63 +203,54 @@ public class KafkaServiceImpl implements IKafkaService {
     private void setLevelType(Coordinate coordinate, Long tagId) {
         //处理消息的level和type,消息的type与报警类型有关,多个报警类型只取级别高的报警值来设置type
         Integer level = coordinate.getLevel();
+        Integer type = coordinate.getType();
 
-        // Map heartAlarmMap = redisService.hashGetMap(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
         Warning heartAlarm = warningService.getCache(ConstantUtil.HEART_ALARM_KEY_PRE, tagId);
-
-        // Map powerAlarmMap = redisService.hashGetMap(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
-        Warning powerAlarm =warningService.getCache(ConstantUtil.POWER_ALARM_KEY_PRE,tagId);
-
-        // Map wristAlarmMap = redisService.hashGetMap(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
+        Warning powerAlarm = warningService.getCache(ConstantUtil.POWER_ALARM_KEY_PRE, tagId);
         Warning wristAlarm = warningService.getCache(ConstantUtil.WRISTLET_ALARM_KEY_PRE, tagId);
-
-        // Map sosAlarmMap = redisService.hashGetMap(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
         Warning sosAlarm = warningService.getCache(ConstantUtil.SOS_ALARM_KEY_PRE, tagId);
 
-        if (level == null || level != ConstantUtil.ALARM_URGEN.intValue()) {
+        if (type == null || type.intValue() == ConstantUtil.COOR_NORMAL.intValue()) {
             if (heartAlarm != null) {
                 Integer heartLevel = heartAlarm.getLevel();
                 if (heartLevel != null) {
                     if (level == null) {
                         coordinate.setLevel(heartLevel);
                         coordinate.setType(ConstantUtil.COOR_HEART);
-                    } else if (heartLevel > level) {
+                    } else if (heartLevel.intValue() > level.intValue()) {
                         coordinate.setLevel(heartLevel);
                         coordinate.setType(ConstantUtil.COOR_HEART);
                     }
                 }
             } else if (powerAlarm != null) {
                 Integer powerLevel = powerAlarm.getLevel();
-                level = coordinate.getLevel();
                 if (powerLevel != null) {
                     if (level == null) {
                         coordinate.setLevel(powerLevel);
                         coordinate.setType(ConstantUtil.COOR_HEART);
-                    } else if (powerLevel > level) {
+                    } else if (powerLevel.intValue() > level.intValue()) {
                         coordinate.setLevel(powerLevel);
                         coordinate.setType(ConstantUtil.COOR_POWER);
                     }
                 }
             } else if (wristAlarm != null) {
                 Integer wristLevel = wristAlarm.getLevel();
-                level = coordinate.getLevel();
                 if (wristLevel != null) {
                     if (level == null) {
                         coordinate.setLevel(wristLevel);
                         coordinate.setType(ConstantUtil.COOR_WRISTLET);
-                    } else if (wristLevel > level) {
+                    } else if (wristLevel.intValue() > level.intValue()) {
                         coordinate.setLevel(wristLevel);
                         coordinate.setType(ConstantUtil.COOR_WRISTLET);
                     }
                 }
             } else if (sosAlarm != null) {
                 Integer sosLevel = sosAlarm.getLevel();
-                level = coordinate.getLevel();
                 if (sosLevel != null) {
                     if (level == null) {
                         coordinate.setLevel(sosLevel);
                         coordinate.setType(ConstantUtil.COOR_SOS);
-                    } else if (sosLevel > level) {
+                    } else if (sosLevel.intValue() > level.intValue()) {
                         coordinate.setLevel(sosLevel);
                         coordinate.setType(ConstantUtil.COOR_SOS);
                     }
@@ -218,7 +273,7 @@ public class KafkaServiceImpl implements IKafkaService {
         Warning warning = null;
         String fenceCode = redisPolicy.getFenceCode();
         Fence redisfence = fenceService.getCache(fenceCode);
-        // logger.info("====策略对应的区域为:{}", redisfence.toString());
+        // logger.info("====策略对应的区域为:{}", redisfence.getFenceName());
         if (redisfence == null)
             return null;
 
@@ -239,7 +294,7 @@ public class KafkaServiceImpl implements IKafkaService {
         if (isTimeBetween != null && isTimeBetween && isWeekIn) {
             //从缓存中获取坐标
             String points = redisfence.getPoints();
-            logger.info("===策略对应的围栏区域各个点的值:{}", points);
+            // logger.info("===策略对应的区域'{}'各个点的值:{}", redisfence.getFenceName(), points);
             //设置当前围栏名
             coordinate.setFenceName(redisfence.getFenceName());
             coordinate.setFenceCode(redisfence.getFenceCode());
@@ -263,15 +318,15 @@ public class KafkaServiceImpl implements IKafkaService {
                     List<Warning> warningLsOld = warningService.getFenceWarnings(tagId);
                     if (isIn) {
                         //点在围栏中
-                        logger.info("==点在区域:{}-内==",redisfence.getFenceName());
+                        logger.info("==点在区域:{}-内==", redisfence.getFenceName());
                         //forbidden 0 禁止进入
                         if (forbiddenValue == inValue) {
-                            logger.info("==点在区域:{}-内={}",redisfence.getFenceName(),"不符合策略");
+                            logger.info("==点在区域:{}-内={}", redisfence.getFenceName(), "不符合策略");
                             //不符合策略，查看是否之前有过相同报警，有则不添加报警，无则添加报警，并缓存报警,并在坐标添加报警状态
                             String warningMsg = ConstantUtil.FENCE_ENTER + redisfence.getFenceName();
                             warning = this.createfenceAlarm(warningMsg, warningLsOld, coordinate);
                         } else if (forbiddenValue == outValue) {
-                            logger.info("==点在区域:{}-内={}",redisfence.getFenceName(),"符合策略");
+                            logger.info("==点在区域:{}-内={}", redisfence.getFenceName(), "符合策略");
                             //forbidden 1 禁止进出
                             //符合策略,查看是否有旧报警,有旧报警,解除报警
                             if (warningLsOld != null && warningLsOld.size() > 0) {
@@ -279,17 +334,17 @@ public class KafkaServiceImpl implements IKafkaService {
                             }
                         }
                     } else {
-                        logger.info("==点在区域:{}-外==",redisfence.getFenceName());
+                        logger.info("==点在区域:{}-外==", redisfence.getFenceName());
                         //点在围栏外
                         //forbidden 0 禁止进入
                         if (forbiddenValue == inValue) {
-                            logger.info("==点在区域:{}-外={}",redisfence.getFenceName(),"符合策略");
+                            logger.info("==点在区域:{}-外={}", redisfence.getFenceName(), "符合策略");
                             //符合策略,查看是否有旧报警,有旧报警,解除报警
                             if (warningLsOld != null && warningLsOld.size() > 0) {
                                 warning = this.cancelFenceAlarm(coordinate, warningLsOld);
                             }
                         } else if (forbiddenValue == outValue) {
-                            logger.info("==点在区域:{}-外={}",redisfence.getFenceName(),"不符合策略");
+                            logger.info("==点在区域:{}-外={}", redisfence.getFenceName(), "不符合策略");
                             //forbidden 1 禁止进出
                             //不符合策略，查看是否之前有过相同报警，有则不添加报警，无则添加报警，并缓存报警,并在坐标添加报警状态
                             String warningMsg = ConstantUtil.FENCE_LEAVE + redisfence.getFenceName();
@@ -300,59 +355,6 @@ public class KafkaServiceImpl implements IKafkaService {
             }
         }
         return warning;
-    }
-
-    @Override
-    public Map<String, Object> handlePoints(List<ConsumerRecord<String, String>> records) throws InterruptedException {
-        Map<String, Object> resultMap = new HashMap();
-        List<Coordinate> coordinates = new ArrayList<>();
-        List<Warning> warnings = new ArrayList<>();
-        for (ConsumerRecord<String, String> record : records) {
-            String kafkaMsg = record.value().toString();
-            JSONObject msgObj = JSON.parseObject(kafkaMsg);
-            Integer type = msgObj.getInteger("type");
-
-            //只处理type 2 消息
-            if (type == ConstantUtil.ENGINE_COOR) {
-                Coordinate coordinate = JSON.parseObject(record.value().toString(), Coordinate.class);
-                Map rsMap = this.handlePoint(coordinate);
-                if (rsMap != null) {
-                    Coordinate coordinate1 = (Coordinate) rsMap.get("coordinate");
-                    List<Warning> warnings1 = (List<Warning>) rsMap.get("warnings");
-                    if (coordinate1 != null)
-                        coordinates.add(coordinate1);
-                    if (warnings1 != null && warnings1.size() > 0)
-                        warnings.addAll(warnings1);
-                }
-            } else if (type == ConstantUtil.ENGINE_ARLARM) {
-                //兼容定位引擎直接上报的报警
-                // this.handleAlarm(coordinates, warnings, msgObj);
-            } else if (type == ConstantUtil.ENGINE_STATUS) {
-                //处理状态消息
-                List<Warning> statusWarnings = this.handleStatus(msgObj);
-                if (statusWarnings != null && statusWarnings.size() > 0) {
-                    warnings.addAll(statusWarnings);
-                }
-            }
-        }
-
-        List<String> coorStr = new ArrayList<>();
-        if (coordinates != null && coordinates.size() > 0) {
-            for (Coordinate coor : coordinates) {
-                coorStr.add(JSON.toJSONString(coor));
-            }
-        }
-
-        List<String> warningStr = new ArrayList<>();
-        if (warnings != null && warnings.size() > 0) {
-            for (Warning warning : warnings) {
-                warningStr.add(JSON.toJSONString(warning));
-            }
-        }
-
-        resultMap.put("coordinates", coorStr);
-        resultMap.put("warnings", warningStr);
-        return resultMap;
     }
 
 
@@ -543,7 +545,6 @@ public class KafkaServiceImpl implements IKafkaService {
             }
 
             if (!sosAlarmMsg.isEmpty()) {
-                logger.info(sosAlarmMsg);
                 warning = this.createSosAlarm(status, sosAlarmMsg, tagId, timestamp);
             }
         }

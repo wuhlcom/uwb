@@ -4,9 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.zhilutec.dbs.entities.Department;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.Transient;
 import java.util.List;
-import java.util.Map;
 
 public interface IDepartmentService {
 
@@ -26,11 +24,6 @@ public interface IDepartmentService {
     Department getDepartmentsTree();
     String getDepartmentsTreeRs();
 
-    @Transient
-    Department getDptPersonTree();
-
-    @Transient
-    String getDptPersonTreeRS();
 
     // 更新人员到上级部门
     String delete(JSONObject jsonObject);

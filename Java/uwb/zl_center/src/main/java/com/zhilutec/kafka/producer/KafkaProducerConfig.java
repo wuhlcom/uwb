@@ -1,11 +1,14 @@
 package com.zhilutec.kafka.producer;
 
 import com.mia.common.constant.ServiceConstant;
+import com.zhilutec.services.ZkService;
+import com.zhilutec.services.impl.ZkServiceImpl;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +27,9 @@ import java.util.Map;
 public class KafkaProducerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(KafkaProducerConfig.class);
+
+    @Autowired
+    private ZkServiceImpl zkService;
 
     @Resource
     private KafkaProducerProperty kafkaProducerProperty;

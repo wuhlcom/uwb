@@ -21,4 +21,8 @@ public class ConstantUtil {
 
     public static Long REDIS_DEFAULT_TTL = -1L;
 
+    //报警开关
+    public static Integer ALARM_ON = 1;
+    public static Integer ALARM_OFF = 0;
+
 }

@@ -6,8 +6,8 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.zhilutec.common.result.Result;
 import com.zhilutec.common.result.ResultCode;
-import com.zhilutec.common.utils.FenceUtil;
 import com.zhilutec.common.utils.ConstantUtil;
+import com.zhilutec.common.utils.FenceUtil;
 import com.zhilutec.dbs.daos.FenceDao;
 import com.zhilutec.dbs.entities.Fence;
 import com.zhilutec.dbs.entities.Person;
@@ -126,7 +126,6 @@ public class FenceServiceImpl implements IFenceService {
 
     //更新区域
     //区域有策略且策略使用的情况下不允许修改区域
-    //更新区域但没有修改区域坐标参数时不更新缓存
     @Transactional
     @Override
     public String update(JSONObject jsonObject) {
@@ -137,13 +136,34 @@ public class FenceServiceImpl implements IFenceService {
         }
 
         Fence fence = JSONObject.parseObject(jsonObject.toJSONString(), Fence.class);
-
         Example paramsExample = new Example(Fence.class);
         Example.Criteria paramsCriteria = paramsExample.createCriteria();
         // 设置查询条件 多个andEqualTo串联表示 and条件查询
         paramsCriteria.andEqualTo("fenceCode", fenceCode).andEqualTo("isdel", 1);
         int updateRs = fenceDao.updateByExampleSelective(fence, paramsExample);
         if (updateRs == 1) {
+            String newFenceName = fence.getFenceName();
+            String newPoints = fence.getPoints();
+
+            //更新围栏名缓存
+            if (newFenceName != null && newFenceName.isEmpty()) {
+                String key = redisService.genRedisKey(ConstantUtil.FENCE_KEY_PRE, fenceCode);
+                String nameField = "fenceName";
+                String oldFenceName = (String) redisService.hashGet(key, nameField);
+                if (!newFenceName.equals(oldFenceName)) {
+                    redisService.hashAdd(key, nameField, newFenceName, ConstantUtil.REDIS_DEFAULT_TTL);
+                }
+            }
+
+            //更新围栏坐标缓存
+            if (newPoints != null && newPoints.isEmpty()) {
+                String key = redisService.genRedisKey(ConstantUtil.FENCE_KEY_PRE, fenceCode);
+                String nameField = "points";
+                String oldPionts = (String) redisService.hashGet(key, nameField);
+                if (!newPoints.equals(oldPionts)) {
+                    redisService.hashAdd(key, nameField, newPoints, ConstantUtil.REDIS_DEFAULT_TTL);
+                }
+            }
             return Result.ok("修改区域信息成功").toJSONString();
         } else {
             return Result.error("修改区域信息失败").toJSONString();

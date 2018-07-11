@@ -145,7 +145,7 @@ public class FastDFSConnectionPool {
      */
 
     public void release(TrackerServer trackerServer) {
-        LOGGER.info("[释放当前连接[prams:" + trackerServer.getInetSocketAddress().getAddress().getHostName() + "] ");
+        LOGGER.info("[释放当前连接[" + trackerServer.getInetSocketAddress().getAddress().getHostName() + "] ");
         if (trackerServer != null) {
             IDLE_CONNECTION_POOL.add(trackerServer);
         }

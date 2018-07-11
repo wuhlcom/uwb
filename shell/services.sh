@@ -22,9 +22,8 @@
 # specify the config
 #java -jar zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar -Dspring.config.location=E:\svn\src\Java\uwb\zl_fastdfs\target\application.properties
 #java -jar zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar --fastdfs.tracker_servers=192.168.10.196:22122
-set -e
-#set -u
-
+#set -e 当命令以非零状态退出时，则退出shell
+#set -u 当变量为空时报错
 
 CMD_HEAD="nohup java -jar "
 #注意第一个大括号前后有空格
@@ -35,21 +34,16 @@ SERVICE_HOME=""
 NAME=services.sh
 SCRIPTNAME=/etc/init.d/${NAME}
 CONF_HOME=/home/project/uwb/config
-SLEEP=5
-
-PERMISSION=permission
+SLEEP=5s
+SRV_SLEEP=10s
 RESOURCES=resources
 FASTDFS=fastdfs
 PRODUCER=producer
 CENTER=center
-ALARM=alarm
-ALARM_SAVE=alarm_save
-COORDINATE=coordinate
-COORDINATE_SAVE=coordinate_save
 STATUS_SAVE=status_save
 WEBSOCKET=websocket
 STORAGE=storage
-SERVICES=($PERMISSION $RESOURCES $FASTDFS $PRODUCER $CENTER $ALARM $ALARM_SAVE $COORDINATE $COORDINATE_SAVE $STATUS_SAVE $WEBSOCKET $STORAGE)
+SERVICES=($RESOURCES $FASTDFS $PRODUCER $CENTER  $STATUS_SAVE $WEBSOCKET $STORAGE)
 USAGE="Usage: $SCRIPTNAME {startOne|stopOne|startParam|start|stop|restart|restartOne}"
 
 SRV_NAME=$2
@@ -108,16 +102,13 @@ help(){
 	Author: wuhongliang
 	License: zhilutec	
 --------------all uwb services name---------------------------
-     | ${PERMISSION} |
      | ${RESOURCES} |
      | ${FASTDFS} |
      | ${PRODUCER} |
-     | ${CENTER} |
-     | ${ALARM} |
-     | ${ALARM_SAVE} |
-     | ${COORDINATE} |
-     | ${COORDINATE_SAVE} |
+     | ${CENTER} |   
      | ${STATUS_SAVE} |
+     | ${WEBSOCKET} |
+     | ${STORAGE} |
 	 for(i=0;i<${#SERVICES[@]};i++) do echo | ${SERVICES[i]} |; done
 --------------------------------------------------------------
     start  start all services
@@ -148,7 +139,8 @@ EOF
 
 # print services 
 getServices(){
-    SRVS=`jps -l|grep $1`	
+    #SRVS=`jps -l|grep $1`	
+	SRVS=`ps -ef|grep uwb|grep -v grep|awk -F ' ' '{print $2}'`
 	if [ ! -n "${SRVS}" ] 
 	then
 	  echo "no Services"
@@ -159,11 +151,22 @@ getServices(){
 
 #del nohup.out
 delNohupOut(){
-  nohupRs=`ls -l|grep nohup.out`
-  if [ -n "nohupRs" ]
+  NOHUP_FILE=`ls -l|grep nohup.out`
+  if [ -n "$NOHUP_FILE" ]
   then
      rm nohup.out
-  fi  
+  else
+     echo "nohup.out file not existed!"
+  fi 
+}
+
+d_pause(){
+  while true
+  do
+    pause_time=1h
+    echo "pausing the srcipt ${pause_time}...."
+    sleep $pause_time
+  done
 }
 
 startAll(){	  
@@ -172,21 +175,17 @@ startAll(){
 	   startService
 	done	
     getServices $SERVICE
-	# RETVAL=$?
 	delNohupOut
-	# return $RETVAL
 }
 
 stopAll(){
-    PIDS=`jps -l|grep ${SERVICE}|awk -F " " '{print $1}'`
+    #PIDS=`jps -l|grep ${SERVICE}|awk -F " " '{print $1}'`
+	PIDS=`ps -ef|grep ${SERVICE}|grep -v grep|awk -F ' ' '{print $2}'`
 	if [ -n "${PIDS}" ];then
       kill -9 ${PIDS}
 	else
 	  echo "Services were stopped!"
 	fi
-	# getServices $SERVICE	
-	# RETVAL=$?
-	# return $RETVAL
 }
 
 startService(){
@@ -203,30 +202,27 @@ startService(){
 
 	if [ -f "${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-uwb-SNAPSHOT.jar" ];then
 	 if [ ! -f $CONF_PATH ]; then
-        echo "Starting ${SRV_NAME} by default config file ..."
+        echo "Starting '${SRV_NAME}' by default config file ..."
 		cmd="${CMD_HEAD}${XMS_VALUE}${XMX_VALUE}${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-uwb-SNAPSHOT.jar${LOG_NULL} &"
 		echo $cmd
         bash -c "${cmd}"
      elif [ -f $CONF_PATH ]; then
-        echo "Starting ${SRV_NAME} with config file ${CONF_PATH} ..."	
+        echo "Starting '${SRV_NAME}' with config file ${CONF_PATH} ..."	
 	    cmd="${CMD_HEAD}${XMS_VALUE}${XMX_VALUE}-Dspring.config.location=${CONF_PATH} ${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar${LOG_NULL} &"
 		echo $cmd
 	    bash -c "${cmd}"
      fi
-	 sleep ${SLEEP}	
+	 sleep ${SRV_SLEEP}	
     else
-      echo "server \'$SRV_NAME\' not existed!"	     
+      echo "server '$SRV_NAME' not existed!"	     
 	fi
 	
- 
 }
 
 startOne(){  
 	startService  
 	getServices zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar
-	# RETVAL=$?
 	delNohupOut
-	# return $RETVAL
 }
 
 #启动时修改一个或多个配置文件参数
@@ -234,23 +230,18 @@ startParam(){
 	echo "${CMD_HEAD}${XMS_VALUE}${XMX_VALUE}${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar ${PARAM}${LOG_NULL} &"
     ${CMD_HEAD}${XMS_VALUE}${XMX_VALUE}${SERVICE_HOME}/zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar ${PARAM}${LOG_NULL} &
 	getServices zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar	
-	# RETVAL=$?
 	delNohupOut
-	# return $RETVAL
 }
 
 stopOne(){   
 	# kill -9 `jps -l|grep zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar|awk -F " " '{print $1}'`	
-	PID=`jps -l|grep zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar|awk -F " " '{print $1}'`
+	#PID=`jps -l|grep zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar|awk -F " " '{print $1}'`
+	PID=`ps -ef|grep zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar|grep -v grep|awk -F ' ' '{print $2}'`
 	if [ -n "${PID}" ];then
       kill -9 ${PID}
 	else
 	  echo "Service ${SRV_NAME} is stopped!"
-	fi
-	
-	# getServices zl_${SRV_NAME}-${VER}-${SERVICE}-SNAPSHOT.jar	
-	# RETVAL=$?
-	# return $RETVAL
+	fi	
 }
 
 case "$1" in
@@ -259,11 +250,13 @@ case "$1" in
         ;;
     start)
 	    #等10s，等其它服务启动
-        sleep 5
+        sleep ${SLEEP}
         echo "Starting all services..."
         startAll
+		echo "waiting for services starting..."
 		sleep 10
 	    echo "done."
+		#d_pause
         ;;
     stop)
         echo "Stopping all services..."
@@ -276,19 +269,20 @@ case "$1" in
 	   stopAll
 	   echo "Starting all services..."
 	   startAll
+	   echo "waiting for services starting..."
 	   sleep 10
 	   echo "done."
 	   ;;
     startOne)
         echo "Starting $SRV_NAME..."
         startOne
-		sleep 5
+		sleep ${SLEEP}
 	    echo "done."
         ;;
 	startParam)
         echo "Starting $SRV_NAME..."
         startParam
-		sleep 5
+		sleep ${SLEEP}
 	    echo "done."
         ;;
     stopOne)
@@ -302,13 +296,12 @@ case "$1" in
         stopOne 
 	    echo "Starting $SRV_NAME..."
 	    startOne	
-		sleep 5
+		sleep ${SLEEP}
         echo "done."		
 	    ;;
      *)
         echo ${USAGE} >&2
-        exit 3
+        # exit 3
         ;;
 esac
 
-exit 0

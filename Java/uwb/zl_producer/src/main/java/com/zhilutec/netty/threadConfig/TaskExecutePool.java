@@ -20,8 +20,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 @ComponentScan("com.zhilutec.configs")
 public class TaskExecutePool {
 
-      @Autowired
-     private TaskThreadPoolConfig taskThreadPoolConfig;
+    @Autowired
+    private TaskThreadPoolConfig taskThreadPoolConfig;
 
     @Bean
     public Executor nettyServer() {

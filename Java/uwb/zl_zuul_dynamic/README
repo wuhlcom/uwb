@@ -1,0 +1,2 @@
+zuul mysql数据库动态获取路由
+后续要将路由添加到redis中从redis获取路由

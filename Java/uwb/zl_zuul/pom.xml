@@ -24,10 +24,23 @@
         <java.version>1.8</java.version>
         <web.version>1.5.10.RELEASE</web.version>
         <janino.version>3.0.7</janino.version>
+        <commons.lang3.version>3.0</commons.lang3.version>
         <spring-cloud.version>Edgware.SR3</spring-cloud.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-zuul</artifactId>
@@ -44,10 +57,11 @@
             <artifactId>spring-cloud-starter-eureka-server</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
+
+        <!--<dependency>-->
+        <!--<groupId>org.springframework.boot</groupId>-->
+        <!--<artifactId>spring-boot-starter-actuator</artifactId>-->
+        <!--</dependency>-->
 
         <!-- The org.codehaus.janino:commons-compiler:2.7.8 dependency -->
         <!-- will be automatically pulled in by Maven's transitivity rules -->
@@ -56,7 +70,6 @@
             <artifactId>janino</artifactId>
             <version>${janino.version}</version>
         </dependency>
-
 
     </dependencies>
 
@@ -82,14 +95,7 @@
     </build>
 
     <repositories>
-        <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
+
         <repository>
             <id>spring-milestones</id>
             <name>Spring Milestones</name>

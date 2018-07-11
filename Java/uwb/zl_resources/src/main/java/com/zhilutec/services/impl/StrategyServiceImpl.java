@@ -8,7 +8,10 @@ import com.zhilutec.common.result.ResultCode;
 import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.common.validators.StrategyValidator;
 import com.zhilutec.dbs.daos.StrategyDao;
-import com.zhilutec.dbs.entities.*;
+import com.zhilutec.dbs.entities.Department;
+import com.zhilutec.dbs.entities.Fence;
+import com.zhilutec.dbs.entities.Person;
+import com.zhilutec.dbs.entities.Strategy;
 import com.zhilutec.dbs.pojos.RedisPolicy;
 import com.zhilutec.services.*;
 import org.apache.commons.lang3.StringUtils;
@@ -185,11 +188,9 @@ public class StrategyServiceImpl implements IStrategyService {
         List<Strategy> strategies = strategyDao.getStrategies(strategyParam);
         //获取总数
         long count = pageObj.getTotal();
-
         // if (strategies == null || strategies.isEmpty()) {
         //     return Result.error("无法查询策略信息").toJSONString();
         // }
-
 
         //处理重复周期和关联的用户
         for (Strategy strategy : strategies) {
@@ -618,6 +619,26 @@ public class StrategyServiceImpl implements IStrategyService {
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("strategyUserId", strategyUserId).andEqualTo("isdel", 1);
         return strategyDao.selectByExample(example);
+    }
+
+    @Override
+    public List<RedisPolicy> getRedisPolicies(String key) {
+        List<RedisPolicy> redisPolicies = new ArrayList<>();
+        List<Object> objects = redisService.hashValues(key);
+        if (objects != null) {
+            for (Object object : objects) {
+                String jsonStr = JSONObject.toJSONString(object);
+                RedisPolicy redisPolicy = JSONObject.parseObject(jsonStr, RedisPolicy.class);
+                redisPolicies.add(redisPolicy);
+            }
+        }
+        return redisPolicies;
+    }
+
+    @Override
+    public List<RedisPolicy> getRedisPolicies(Long tagId) {
+        String key = ConstantUtil.POLICY_KEY_PRE + ":" + Long.toString(tagId);
+        return this.getRedisPolicies(key);
     }
 
 

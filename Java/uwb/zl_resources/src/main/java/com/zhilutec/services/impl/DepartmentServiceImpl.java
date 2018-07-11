@@ -12,17 +12,17 @@ import com.zhilutec.dbs.daos.PersonDao;
 import com.zhilutec.dbs.entities.Department;
 import com.zhilutec.dbs.entities.Person;
 import com.zhilutec.dbs.entities.Strategy;
-import com.zhilutec.dbs.pojos.Person2DptRS;
 import com.zhilutec.dbs.pojos.PersonDepartmentParam;
 import com.zhilutec.dbs.pojos.RedisPolicy;
-import com.zhilutec.services.*;
+import com.zhilutec.services.IDepartmentService;
+import com.zhilutec.services.IRedisService;
+import com.zhilutec.services.IStrategyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
-import java.beans.Transient;
 import java.util.*;
 
 @Service
@@ -253,6 +253,7 @@ public class DepartmentServiceImpl implements IDepartmentService {
         return department;
     }
 
+
     /**
      * 递归查询上级部门名
      */
@@ -343,57 +344,6 @@ public class DepartmentServiceImpl implements IDepartmentService {
     @Override
     public String getDepartmentsTreeRs() {
         Department department = this.getDepartmentsTree();
-        return Result.ok(department).toJSONString();
-    }
-
-    @Transient
-    @Override
-    public Department getDptPersonTree() {
-        List<Department> departments = departmentDao.getDepartments();
-        for (Department department : departments) {
-            String departmentCode = department.getDepartmentCode();
-            this.setChildren(department, departmentCode);
-        }
-        Department root = this.getDepartmentByCode(ConstantUtil.TOP_DEPARTMENT_CODE);
-        String rootCode = root.getDepartmentCode();
-        this.setChildren(root, rootCode);
-
-        //递归查询
-        TreeUtils.createTree(departments, root, DPT_CODE, DPT_PARENT, "children");
-        return root;
-    }
-
-    private void setChildren(Department department, String departmentCode) {
-        List<Person2DptRS> people = personDao.getPersonsByDpt(departmentCode);
-        if (people != null && people.size() > 0) {
-            List<Department> departments1 = new ArrayList<>();
-            for (Person2DptRS person : people) {
-                Department department1 = new Department();
-                department1.setDepartmentName(person.getDepartmentName());
-                department1.setDepartmentCode(person.getDepartmentCode());
-                department1.setTagId(person.getTagId());
-                departments1.add(department1);
-            }
-
-            List<Department> children = department.getChildren();
-            if (children != null && children.size() > 0) {
-                if (departments1 != null) {
-                    children.addAll(departments1);
-                    department.setChildren(children);
-                }
-            } else if (children == null || children.size() == 0) {
-                if (departments1 != null) {
-                    department.setChildren(departments1);
-                }
-            }
-
-        }
-    }
-
-    @Override
-    @Transient
-    public String getDptPersonTreeRS() {
-        Department department = this.getDptPersonTree();
         return Result.ok(department).toJSONString();
     }
 

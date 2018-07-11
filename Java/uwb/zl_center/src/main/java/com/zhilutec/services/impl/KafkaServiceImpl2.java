@@ -145,7 +145,7 @@ public class KafkaServiceImpl2 implements KafkaService {
     public ResponseInfo setProducer(List<PeerModuleEnum> neighborTypeList) {
     	//配置信息本身没有检查，回头再写
     	if (null == regInfo || null == regInfo.getKafka()) {
-    		logger.error("No register information.");
+    		logger.info("No register information.");
     		return new ResponseInfo(ServiceErrorEnum.SYSTEM_ERROR);
     	}
     	serviceRegistry.initNeighbor(neighborTypeList);
@@ -155,7 +155,7 @@ public class KafkaServiceImpl2 implements KafkaService {
     
     @Override
     public ResponseInfo setConsumer() {   	
-    	logger.error("To be continue.");
+    	logger.info("To be continue.");
 		return new ResponseInfo(ServiceErrorEnum.SUCCESS, configuration);    		
 	}
 
@@ -163,10 +163,10 @@ public class KafkaServiceImpl2 implements KafkaService {
     public ServiceErrorEnum send(String message, PeerModuleEnum neibor, String key) {
     	String topic = serviceRegistry.getNeighborTopic(neibor, key);
     	if (null == topic || topic.isEmpty()) {
-    		logger.error("Can not get service node of "+neibor.getModule()+".");
+    		logger.info("Can not get service node of "+neibor.getModule()+".");
     		return ServiceErrorEnum.SERVICE_OFFLINE;
     	} else {
-    		logger.error("Send message to service "+neibor.getModule()+" on topic "+topic+".");
+    		logger.info("Send message to service "+neibor.getModule()+" on topic "+topic+".");
     		kafkaTemplate.send(topic, message);
     		return ServiceErrorEnum.SUCCESS;
     	}       
@@ -175,10 +175,10 @@ public class KafkaServiceImpl2 implements KafkaService {
     @Override
     public ServiceErrorEnum send(String message, String topic) {
     	if (null == topic || topic.isEmpty()) {
-    		logger.error("Topic error.");
+    		logger.info("Topic error.");
     		return ServiceErrorEnum.SERVICE_OFFLINE;
     	} else {
-    		logger.error("Send message to topic "+topic+".");
+    		logger.info("Send message to topic "+topic+".");
 			kafkaTemplate.setProducerListener(new KafkaProducerListener());
     		kafkaTemplate.send(topic, message);
     		return ServiceErrorEnum.SUCCESS;

@@ -4,17 +4,16 @@ import com.zhilutec.common.utils.ConstantUtil;
 import com.zhilutec.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -254,6 +253,16 @@ public class RedisServiceImpl implements IRedisService {
         if (set != null && !set.isEmpty()) {
             delete(set);
         }
+    }
+
+    @Override
+    public List<Object> hashValues(String key) {
+        List<Object> objects = new ArrayList<>();
+        List<Object> redisObjects = hashOperations.values(key);
+        if (redisObjects == null) {
+            return objects;
+        }
+        return redisObjects;
     }
 
     @Override

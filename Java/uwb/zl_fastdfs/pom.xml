@@ -54,11 +54,6 @@
             <systemPath>${project.basedir}/lib/fastdfs-client-java-1.27-SNAPSHOT.jar</systemPath>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>com.github.tobato</groupId>-->
-            <!--<artifactId>fastdfs-client</artifactId>-->
-            <!--<version>1.25.4-RELEASE</version>-->
-        <!--</dependency>-->
 
         <!-- 添加thymeleaf -->
         <dependency>
@@ -145,10 +140,10 @@
             <version>${commons.lang3.version}</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.cloud</groupId>-->
-            <!--<artifactId>spring-cloud-starter-eureka-server</artifactId>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-eureka-server</artifactId>
+        </dependency>
 
         <!--<dependency>-->
             <!--<groupId>org.springframework.boot</groupId>-->

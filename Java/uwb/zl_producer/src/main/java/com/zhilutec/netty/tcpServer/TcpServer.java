@@ -1,20 +1,27 @@
-package com.zhilutec.netty.tcpServer;
-
-import com.zhilutec.configs.TcpConfig;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.AdaptiveRecvByteBufAllocator;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelOption;
-
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+// package com.zhilutec.netty.tcpServer;
+//
+// import com.zhilutec.configs.TcpConfig;
+// import io.netty.bootstrap.ServerBootstrap;
+// import io.netty.buffer.PooledByteBufAllocator;
+// import io.netty.channel.AdaptiveRecvByteBufAllocator;
+// import io.netty.channel.ChannelFuture;
+// import io.netty.channel.ChannelOption;
+//
+// import io.netty.channel.EventLoopGroup;
+// import io.netty.channel.nio.NioEventLoopGroup;
+// import io.netty.channel.socket.nio.NioServerSocketChannel;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.beans.factory.annotation.Qualifier;
+// import org.springframework.boot.context.properties.EnableConfigurationProperties;
+// import org.springframework.context.annotation.Bean;
+// import org.springframework.context.annotation.ComponentScan;
+// import org.springframework.context.annotation.Configuration;
+// import org.springframework.scheduling.annotation.Async;
+// import org.springframework.stereotype.Component;
+//
+// import javax.annotation.PostConstruct;
 
 /**
  * server服务器 Created by wj on 2017/8/30.
@@ -47,55 +54,53 @@ import org.springframework.stereotype.Component;
  * 为True时，触发ChannelInboundHandler的userEventTriggered()方法，事件为ChannelInputShutdownEvent。
  */
 
-@Component
-// @ComponentScan("com.zhilutec.configs")
-public class TcpServer {
-    private static final int DEFAULT_MIN_SIZE = 64;
-    private static final int DEFAULT_INITIAL_SIZE = 2048;
-    private static final int DEFAULT_MAX_SIZE = 65536;
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
-    @Autowired
-    private TcpConfig tcpConfig;
-
-    // private static final Logger logger =
-    // LoggerFactory.getLogger(TcpServer.class);
-
-    @Async("nettyServer")
-    public void run(int port) {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(tcpConfig.getBossThreadCount()); // (1)
-        EventLoopGroup workerGroup = new NioEventLoopGroup(tcpConfig.getWorkerThreadCount());
-        try {
-            ServerBootstrap b = new ServerBootstrap(); // (2)
-            b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class) // (3)
-                    .childHandler(new TcpHanlderInitializer())
-                    .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                    // .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
-                    .option(ChannelOption.RCVBUF_ALLOCATOR,
-                            new AdaptiveRecvByteBufAllocator(DEFAULT_MIN_SIZE, DEFAULT_INITIAL_SIZE, DEFAULT_MAX_SIZE))
-                    .option(ChannelOption.SO_BROADCAST, tcpConfig.isSoBroadcast()) // (4)
-                    .option(ChannelOption.SO_REUSEADDR, tcpConfig.isSoReuseaddr())
-                    .option(ChannelOption.SO_TIMEOUT, tcpConfig.getSoTimeout())
-                    .option(ChannelOption.SO_RCVBUF, tcpConfig.getSoRcvbuf())
-                    .option(ChannelOption.TCP_NODELAY, tcpConfig.isNodelay())
-                    .option(ChannelOption.SO_SNDBUF, tcpConfig.getSoSndbuf())
-                    .option(ChannelOption.SO_TIMEOUT, tcpConfig.getSoTimeout())
-                    // 服务端接受连接的队列长度，如果队列已满，客户端连接将被拒绝
-                    .option(ChannelOption.SO_BACKLOG, tcpConfig.getSoBacklog()) // (5)
-                    .childOption(ChannelOption.SO_KEEPALIVE, tcpConfig.isSoKeepAlive()); // (6)
-
-            // 绑定端口，开始接收进来的连接
-            ChannelFuture f = b.bind(port).sync(); // (7)
-            logger.info("Tcp server start listen at " + port);
-            // 等待服务器 socket 关闭 。
-            // 在这个例子中，这不会发生，但你可以优雅地关闭你的服务器。
-            f.channel().closeFuture().sync();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
-        }
-    }
-
-}
+// @EnableConfigurationProperties(TcpConfig.class)
+// public class TcpServer {
+//     private static final int DEFAULT_MIN_SIZE = 64;
+//     private static final int DEFAULT_INITIAL_SIZE = 2048;
+//     private static final int DEFAULT_MAX_SIZE = 65536;
+//     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
+//
+//     @Autowired
+//     @Qualifier("nettyTcpConfig")
+//     private TcpConfig tcpConfig;
+//
+//      @Async("nettyServer")
+//     public void run(int port) {
+//         EventLoopGroup bossGroup = new NioEventLoopGroup(tcpConfig.getBossThreadCount()); // (1)
+//         EventLoopGroup workerGroup = new NioEventLoopGroup(tcpConfig.getWorkerThreadCount());
+//         try {
+//             ServerBootstrap b = new ServerBootstrap(); // (2)
+//             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class) // (3)
+//                     .childHandler(new TcpHanlderInitializer())
+//                     .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+//                     // .option(ChannelOption.RCVBUF_ALLOCATOR, AdaptiveRecvByteBufAllocator.DEFAULT)
+//                     .option(ChannelOption.RCVBUF_ALLOCATOR,
+//                             new AdaptiveRecvByteBufAllocator(DEFAULT_MIN_SIZE, DEFAULT_INITIAL_SIZE, DEFAULT_MAX_SIZE))
+//                     .option(ChannelOption.SO_BROADCAST, tcpConfig.isSoBroadcast()) // (4)
+//                     .option(ChannelOption.SO_REUSEADDR, tcpConfig.isSoReuseaddr())
+//                     .option(ChannelOption.SO_TIMEOUT, tcpConfig.getSoTimeout())
+//                     .option(ChannelOption.SO_RCVBUF, tcpConfig.getSoRcvbuf())
+//                     .option(ChannelOption.TCP_NODELAY, tcpConfig.isNodelay())
+//                     .option(ChannelOption.SO_SNDBUF, tcpConfig.getSoSndbuf())
+//                     .option(ChannelOption.SO_TIMEOUT, tcpConfig.getSoTimeout())
+//                     // 服务端接受连接的队列长度，如果队列已满，客户端连接将被拒绝
+//                     .option(ChannelOption.SO_BACKLOG, tcpConfig.getSoBacklog()) // (5)
+//                     .childOption(ChannelOption.SO_KEEPALIVE, tcpConfig.isSoKeepAlive()); // (6)
+//
+//             // 绑定端口，开始接收进来的连接
+//             ChannelFuture f = b.bind(port).sync(); // (7)
+//             logger.info("Tcp server start listen at " + port);
+//             // 等待服务器 socket 关闭 。
+//             // 在这个例子中，这不会发生，但你可以优雅地关闭你的服务器。
+//             f.channel().closeFuture().sync();
+//
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         } finally {
+//             workerGroup.shutdownGracefully();
+//             bossGroup.shutdownGracefully();
+//         }
+//     }
+//
+// }

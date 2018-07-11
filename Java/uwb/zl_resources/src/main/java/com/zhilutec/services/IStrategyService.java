@@ -40,4 +40,7 @@ public interface IStrategyService {
 
     List<Strategy> getStrategyByUserId(String strategyUserId);
 
+    List<RedisPolicy> getRedisPolicies(String key);
+
+    List<RedisPolicy> getRedisPolicies(Long tagId);
 }

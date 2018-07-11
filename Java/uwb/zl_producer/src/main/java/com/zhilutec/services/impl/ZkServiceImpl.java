@@ -6,6 +6,8 @@ import com.mia.common.dto.DtoSend;
 import com.mia.common.dto.ResponseInfo;
 import com.mia.common.enums.PeerModuleEnum;
 import com.mia.common.enums.ServiceErrorEnum;
+import com.mia.common.service.impl.KafkaServiceImpl;
+import com.zhilutec.kafka.producer.KafkaProducerProperty;
 import com.zhilutec.services.ZkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +16,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.stereotype.Service;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
+import javax.annotation.Resource;
 import java.util.List;
+
 
 @EnableKafka
 @Service
@@ -36,21 +38,23 @@ public class ZkServiceImpl implements InitializingBean,ZkService {
     @Value("${env.registry.conf.remote}")
     private Integer confRemote;
 
-	private KafkaServiceImpl2 kafkaService2;
+	private KafkaServiceImpl register;
+	
+	@Resource
+    private KafkaProducerProperty kafkaProducerProperty;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		PeerModuleEnum self = PeerModuleEnum.getByModule(registryModule);
-		kafkaService2 = new KafkaServiceImpl2(remote, confRemote, registryServers, registryModule, kafkaServers,
+		register = new KafkaServiceImpl(remote, confRemote, registryServers, registryModule, kafkaServers,
 				registryNode);
-		ResponseInfo resp = kafkaService2.register(self);
+		ResponseInfo resp = register.register(self);
 		if (resp.getErrcode() != ServiceErrorEnum.SUCCESS.getCode()) {
 			logger.error("Zookeeper initial failed.");
 		}
+		kafkaProducerProperty.setBootstrapServers(resp.getMsg());
+		logger.error("kafkaProducerProperty BootstrapServers"+kafkaProducerProperty.getBootstrapServers()+".");
 		String confData = resp.getMsg();
-		List<PeerModuleEnum> neighbor = new ArrayList<PeerModuleEnum>();
-		neighbor.add(PeerModuleEnum.ACTION);
-		resp = kafkaService2.setProducer(neighbor);
 		reInitKafka(self, confData);
 	}
 
@@ -59,9 +63,6 @@ public class ZkServiceImpl implements InitializingBean,ZkService {
 			logger.info("get configuration " + data + ".");
 			logger.info(" kafkaServers " + kafkaServers + ", registryNode " + registryNode);
 		}
-		String topic = MessageFormat.format(self.getName(), String.valueOf(registryNode));
-		logger.info("topic is " + topic + ".");
-		System.setProperty(ServiceConstant.CONSUMER_TOPIC, topic);
 		System.setProperty(ServiceConstant.REGISTRY_RESULT_ENV, ServiceConstant.REGISTRY_RESULT_CONNECT);
 	}
 	
@@ -71,12 +72,12 @@ public class ZkServiceImpl implements InitializingBean,ZkService {
 
 	@Override
 	public ServiceErrorEnum sendToNeighbor(String data, PeerModuleEnum neighbor, String key) {
-		return kafkaService2.send(data, neighbor, key);
+		return register.send(data, neighbor, key);
 	}
 
 	@Override
 	public ServiceErrorEnum sendToNeighbor(String data, String topic) {
-		return kafkaService2.send(data, topic);
+		return register.send(data, topic);
 	}
 
 	@Override

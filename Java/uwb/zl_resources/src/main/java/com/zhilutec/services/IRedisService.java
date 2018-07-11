@@ -1,7 +1,5 @@
 package com.zhilutec.services;
 
-import org.springframework.data.redis.core.Cursor;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +103,8 @@ public interface IRedisService {
     Set<String> keys(String keyPre);
 
     void delByKeys(String keyPattern);
+
+    List<Object> hashValues(String key);
 
     void delAll();
 

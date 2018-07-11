@@ -63,7 +63,7 @@
         </if>
 
         <if test="timeType!= null and timeType!= '' ">
-           AND time_type =#{timeType, jdbcType=INTEGER}
+            AND time_type =#{timeType, jdbcType=INTEGER}
         </if>
 
         <if test="timeValue!= null and timeValue!= '' ">
@@ -90,4 +90,13 @@
         </choose>
     </select>
 
+
+    <select id="getStrategiesByDpt" parameterType="map" resultType="com.zhilutec.dbs.entities.Strategy">
+        select id,strategy_name,strategy_code,strategy_user_id, fence_code,user_type,available,start_time,finish_time,level,time_type,time_value,forbidden
+        from uwb_strategies
+        where isdel=1 and available=1 and strategy_user_id IN
+        <foreach collection="dptCodes" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>

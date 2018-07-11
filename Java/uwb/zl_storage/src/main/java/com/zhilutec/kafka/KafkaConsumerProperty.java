@@ -5,49 +5,52 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
+ * spring.kafka.consumer.bootstrapServers=${kafka.ip}:${kafka.port}
+ * spring.kafka.consumer.topic=${kafka.consumer.topic}
  * spring.kafka.consumer.autoOffsetReset=latest
- * spring.kafka.consumer.bootstrapServers=192.168.10.166:9092
- * spring.kafka.consumer.clientId=mysql-client
  * spring.kafka.consumer.autoCommit=false
- * spring.kafka.consumer.autoCommitInterval=100
- * spring.kafka.consumer.groupId=mysql
- * spring.kafka.consumer.maxPollRecords=5000
+ * spring.kafka.consumer.autoCommitInterval=1000
+ * spring.kafka.consumer.groupId=uwb-storage-save
+ * spring.kafka.consumer.clientId=uwb-storage
  * spring.kafka.consumer.ackCount=1000
  * spring.kafka.consumer.ackTime=2000
- * spring.kafka.consumer.concurrency=1
- * spring.kafka.consumer.pollTimeout=5000
- * spring.kafka.consumer.topic=positions
+ * spring.kafka.consumer.concurrency=5
+ * spring.kafka.consumer.maxPollRecords=100
+ * spring.kafka.consumer.maxPollIntervalMs=300000
  * spring.kafka.consumer.batchListener=true
- * spring.kafka.consumer.sessionTimeout=15000
+ * spring.kafka.consumer.sessionTimeout=10000
+ * spring.kakfa.consumer.fetchMinBytes=1
+ * spring.kafka.consumer.fetchWaitMax=1000
+ * spring.kafka.consumer.heartbeatIntervalMs=3000
  */
 
 @Component
-// @PropertySource(value = "classpath:kafkaConsumer.properties")
 @ConfigurationProperties(prefix = "spring.kafka.consumer")
 public class KafkaConsumerProperty {
+    private String bootstrapServers;
+    private String topic;
 
     private String autoOffsetReset;
-    private String bootstrapServers;
-    private String clientId;
     private Boolean autoCommit;
     private String autoCommitInterval;
+
     private String groupId;
-    private String maxPollRecords;
+    private String clientId;
+
     private Integer ackCount;
     private Long ackTime;
+
     private Integer concurrency;
+
+    private String maxPollRecords;
+    private Integer maxPollIntervalMs;
     private Long pollTimeout;
-    private String topic;
+
     private Boolean batchListener;
     private String sessionTimeout;
-
-    public String getAutoOffsetReset() {
-        return autoOffsetReset;
-    }
-
-    public void setAutoOffsetReset(String autoOffsetReset) {
-        this.autoOffsetReset = autoOffsetReset;
-    }
+    private Integer fetchMinBytes;
+    private Integer fetchWaitMax;
+    private Integer heartbeatIntervalMs;
 
     public String getBootstrapServers() {
         return bootstrapServers;
@@ -57,12 +60,20 @@ public class KafkaConsumerProperty {
         this.bootstrapServers = bootstrapServers;
     }
 
-    public String getClientId() {
-        return clientId;
+    public String getTopic() {
+        return topic;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public String getAutoOffsetReset() {
+        return autoOffsetReset;
+    }
+
+    public void setAutoOffsetReset(String autoOffsetReset) {
+        this.autoOffsetReset = autoOffsetReset;
     }
 
     public Boolean getAutoCommit() {
@@ -89,12 +100,12 @@ public class KafkaConsumerProperty {
         this.groupId = groupId;
     }
 
-    public String getMaxPollRecords() {
-        return maxPollRecords;
+    public String getClientId() {
+        return clientId;
     }
 
-    public void setMaxPollRecords(String maxPollRecords) {
-        this.maxPollRecords = maxPollRecords;
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public Integer getAckCount() {
@@ -121,20 +132,20 @@ public class KafkaConsumerProperty {
         this.concurrency = concurrency;
     }
 
-    public Long getPollTimeout() {
-        return pollTimeout;
+    public String getMaxPollRecords() {
+        return maxPollRecords;
     }
 
-    public void setPollTimeout(Long pollTimeout) {
-        this.pollTimeout = pollTimeout;
+    public void setMaxPollRecords(String maxPollRecords) {
+        this.maxPollRecords = maxPollRecords;
     }
 
-    public String getTopic() {
-        return topic;
+    public Integer getMaxPollIntervalMs() {
+        return maxPollIntervalMs;
     }
 
-    public void setTopic(String topic) {
-        this.topic = topic;
+    public void setMaxPollIntervalMs(Integer maxPollIntervalMs) {
+        this.maxPollIntervalMs = maxPollIntervalMs;
     }
 
     public Boolean getBatchListener() {
@@ -153,23 +164,36 @@ public class KafkaConsumerProperty {
         this.sessionTimeout = sessionTimeout;
     }
 
-    @Override
-    public String toString() {
-        return "KafkaConsumerProperty{" +
-                "autoOffsetReset='" + autoOffsetReset + '\'' +
-                ", bootstrapServers='" + bootstrapServers + '\'' +
-                ", clientId='" + clientId + '\'' +
-                ", autoCommit=" + autoCommit +
-                ", autoCommitInterval='" + autoCommitInterval + '\'' +
-                ", groupId='" + groupId + '\'' +
-                ", maxPollRecords='" + maxPollRecords + '\'' +
-                ", ackCount=" + ackCount +
-                ", ackTime=" + ackTime +
-                ", concurrency=" + concurrency +
-                ", pollTimeout=" + pollTimeout +
-                ", topic='" + topic + '\'' +
-                ", batchListener=" + batchListener +
-                ", sessionTimeout='" + sessionTimeout + '\'' +
-                '}';
+    public Integer getFetchMinBytes() {
+        return fetchMinBytes;
     }
+
+    public void setFetchMinBytes(Integer fetchMinBytes) {
+        this.fetchMinBytes = fetchMinBytes;
+    }
+
+    public Integer getFetchWaitMax() {
+        return fetchWaitMax;
+    }
+
+    public void setFetchWaitMax(Integer fetchWaitMax) {
+        this.fetchWaitMax = fetchWaitMax;
+    }
+
+    public Integer getHeartbeatIntervalMs() {
+        return heartbeatIntervalMs;
+    }
+
+    public void setHeartbeatIntervalMs(Integer heartbeatIntervalMs) {
+        this.heartbeatIntervalMs = heartbeatIntervalMs;
+    }
+
+    public Long getPollTimeout() {
+        return pollTimeout;
+    }
+
+    public void setPollTimeout(Long pollTimeout) {
+        this.pollTimeout = pollTimeout;
+    }
+
 }

@@ -1,0 +1,61 @@
+server:
+ port: 11007
+
+spring:
+  application:
+    name: uwb-zhilutec
+  cloud:
+    gateway:
+      discovery:
+       locator:
+    #是否与服务发现组件进行结合
+         enabled: true
+      routes:
+      - id: restfull_route
+        uri: http://192.168.10.232:80
+        predicates:
+          - Path=/uwb/resources/**
+              # Normwal Websocket route
+      - id: websocket_route
+        uri: ws://192.168.10.232:80
+        predicates:
+         - Path=/uwb/websocket/**
+  redis:
+    redis:
+    database: 6
+    host: 192.168.10.232
+    port: 6379
+    password: uwb!2018@0511_zl
+    jedis:
+      pool:
+        max-active: 2000
+        max-wait: -1
+        max-idle: 50
+        min-idle: 0
+    timeout: 0
+
+
+eureka:
+  server:
+    ip: 192.168.10.232
+    port: 5555
+  instance:
+#    instance-id: ${spring.cloud.client.ip_address}:${spring.application.name}:${server.port}
+    instance-id: 192.168.10.188:${spring.application.name}:${server.port}
+    lease-expiration-duration-in-seconds: 60
+    lease-renewal-interval-in-seconds: 30
+    prefer-ip-address: true
+    ip-address: 192.168.10.188
+  client:
+    healthcheck:
+      enable: true
+    serviceUrl:
+      defaultZone: http://${eureka.server.ip}:${eureka.server.port}/eureka/
+
+
+
+
+
+
+
+
