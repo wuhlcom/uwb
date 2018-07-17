@@ -1,6 +1,6 @@
-package com.zhilutec.gateway.services;
+package com.zhilutec.services;
 
-import com.zhilutec.gateway.db.CustomerRoute;
+import com.zhilutec.db.CustomerRoute;
 
 import java.util.List;
 import java.util.Map;

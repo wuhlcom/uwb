@@ -1,7 +1,8 @@
-package com.zhilutec.gateway.services.impl;
+package com.zhilutec.services.impl;
 
-import com.zhilutec.gateway.db.CustomerRoute;
-import com.zhilutec.gateway.services.IRedisService;
+import com.alibaba.fastjson.JSON;
+import com.zhilutec.db.CustomerRoute;
+import com.zhilutec.services.IRedisService;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.HashOperations;
@@ -139,6 +140,7 @@ public class RedisServiceImpl implements IRedisService {
     }
 
 
+    //获取hash中所有的value值
     @Override
     public List<Object> hashValues(String key) {
         List<Object> objects = new ArrayList<>();
@@ -156,18 +158,20 @@ public class RedisServiceImpl implements IRedisService {
         return redisTemplate.keys(keyPattern);
     }
 
+    //获取redis中所有的路由缓存
     @Override
     public List<CustomerRoute> routes(String keyPre) {
         List<CustomerRoute> routes = new ArrayList<>();
-        Set<String> keyValues = keys(keyPre);
+        Set<String> keyValues = this.keys(keyPre);
         for (String keyValue : keyValues) {
-            CustomerRoute constomerRoute = (CustomerRoute) hashGetMap(keyValue);
-            routes.add(constomerRoute);
+            List<Object> routeStrlist = this.hashValues(keyValue);
+            for (Object route : routeStrlist) {
+                CustomerRoute customerRoute = JSON.parseObject(route.toString(), CustomerRoute.class);
+                routes.add(customerRoute);
+            }
+
         }
-
         return routes;
-
     }
-
 
 }

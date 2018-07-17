@@ -1,25 +1,31 @@
 server:
  port: 11007
+ servlet:
+   context-path: /uwb/gateway
 
 spring:
   application:
-    name: uwb-zhilutec
+    name: uwb-gateway
   cloud:
     gateway:
       discovery:
        locator:
-    #是否与服务发现组件进行结合
+       #是否与服务发现组件进行结合
          enabled: true
       routes:
-      - id: restfull_route
-        uri: http://192.168.10.232:80
-        predicates:
-          - Path=/uwb/resources/**
-              # Normwal Websocket route
-      - id: websocket_route
-        uri: ws://192.168.10.232:80
-        predicates:
-         - Path=/uwb/websocket/**
+#      - id: restfull_route
+#        uri: http://192.168.10.232:80
+#        predicates:
+#          - Path=/uwb/resources/**
+      # Normwal Websocket route
+#      - id: websocket_route
+#        uri: ws://192.168.10.232:80
+#        predicates:
+#          - Path=/uwb/websocket/**
+#      - id: zl_gateway
+#        uri: http://192.168.10.188:11007
+#        predicates:
+#          - Path=/uwb/gateway/**
   redis:
     redis:
     database: 6
@@ -33,8 +39,6 @@ spring:
         max-idle: 50
         min-idle: 0
     timeout: 0
-
-
 eureka:
   server:
     ip: 192.168.10.232
@@ -51,6 +55,11 @@ eureka:
       enable: true
     serviceUrl:
       defaultZone: http://${eureka.server.ip}:${eureka.server.port}/eureka/
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 
 

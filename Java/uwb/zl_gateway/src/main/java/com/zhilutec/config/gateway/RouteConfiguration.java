@@ -1,6 +1,10 @@
-package com.zhilutec.gateway.config.gateway;
+package com.zhilutec.config.gateway;
 
-import org.springframework.cloud.gateway.config.GatewayProperties;
+import com.zhilutec.services.IRouteService;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.gateway.discovery.DiscoveryClientRouteDefinitionLocator;
+import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
+import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -26,7 +30,7 @@ public class RouteConfiguration {
     private static final String MAX_AGE = "18000L";
 
     @Resource
-    GatewayProperties gatewayProperties;
+    IRouteService routeService;
 
     @Bean
     public WebFilter corsFilter() {
@@ -51,7 +55,7 @@ public class RouteConfiguration {
     }
 
     // @Bean
-    // public DynamicRoutes dynamicRoutes() {
+    // public  dynamicRoutes() {
     //     return new DynamicRoutes(gatewayProperties);
     // }
 
@@ -63,4 +67,44 @@ public class RouteConfiguration {
     // public RouteDefinitionLocator discoveryClientRouteDefinitionLocator(DiscoveryClient discoveryClient,DiscoveryLocatorProperties properties) {
     //     return new DiscoveryClientRouteDefinitionLocator(discoveryClient,properties);
     // }
+
+    // @Bean
+    // public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+    //     RouteLocator routeLocator = builder.routes()
+    //             .route("restfull_route2", r -> r.path("/uwb/resources/**")
+    //                     .uri("http://192.168.10.232:80"))
+    //             .route("websocket_route2", r -> r.path("/uwb/websocket/**")
+    //                     .uri("http://192.168.10.232:80"))
+    //             .build();
+    //     return routeLocator;
+    // }
+
+    // @Bean
+    // RedisRateLimiter redisRateLimiter() {
+    //     return new RedisRateLimiter(1, 2);
+    // }
+
+    //spring security路由安全相关的配置
+    // @Bean
+    // SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) throws Exception {
+    //     return http.httpBasic().and()
+    //             .csrf().disable()
+    //             .authorizeExchange()
+    //             .pathMatchers("/anything/**").authenticated()
+    //             .anyExchange().permitAll()
+    //             .and()
+    //             .build();
+    // }
+    //
+    // @Bean
+    // public MapReactiveUserDetailsService reactiveUserDetailsService() {
+    //     UserDetails user = User.withDefaultPasswordEncoder().username("user").password("password").roles("USER").build();
+    //     return new MapReactiveUserDetailsService(user);
+    // }
+
+    @Bean
+    public RouteDefinitionLocator discoveryClientRouteDefinitionLocator(DiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
+        return new DiscoveryClientRouteDefinitionLocator(discoveryClient, properties);
+    }
+
 }

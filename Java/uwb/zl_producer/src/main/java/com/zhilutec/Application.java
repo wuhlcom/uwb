@@ -73,7 +73,6 @@ public class Application implements CommandLineRunner {
         //     asyncTaskService.executeAsyncTaskPlus(i);
         // }
 
-
     }
 
     @Autowired

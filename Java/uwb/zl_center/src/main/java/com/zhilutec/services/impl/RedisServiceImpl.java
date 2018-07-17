@@ -138,7 +138,7 @@ public class RedisServiceImpl implements IRedisService {
         return hashOperations.size(key);
     }
 
-
+    //获取hash中所有的value值
     @Override
     public List<Object> hashValues(String key) {
         List<Object> objects = new ArrayList<>();

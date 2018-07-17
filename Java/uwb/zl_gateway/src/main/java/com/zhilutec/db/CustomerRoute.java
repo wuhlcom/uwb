@@ -1,10 +1,13 @@
-package com.zhilutec.gateway.db;
+package com.zhilutec.db;
 
 public class CustomerRoute {
-    private String id;
+    private Integer id;
+    private String routeId;
+    //支持的路由类型有After、Before、Between、Cookie、Header、Host、Method、Path、Query、RemoteAddr,注意要区分大小写
+    // 当前只实现了Path类型路由从数据库获取
     private String routeType;
     private String path;
-    private String uri;
+    private String url;
     private Integer port;
     private String host;
     private String filterType;
@@ -12,12 +15,20 @@ public class CustomerRoute {
     private String operter;
     private Integer order;
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public void setRouteId(String routeId) {
+        this.routeId = routeId;
     }
 
     public String getRouteType() {
@@ -36,12 +47,12 @@ public class CustomerRoute {
         this.path = path;
     }
 
-    public String getUri() {
-        return uri;
+    public String getUrl() {
+        return url;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public Integer getPort() {
@@ -90,5 +101,22 @@ public class CustomerRoute {
 
     public void setOrder(Integer order) {
         this.order = order;
+    }
+
+    @Override
+    public String toString() {
+        return "CustomerRoute{" +
+                "id=" + id +
+                ", routeId='" + routeId + '\'' +
+                ", routeType='" + routeType + '\'' +
+                ", path='" + path + '\'' +
+                ", url='" + url + '\'' +
+                ", port=" + port +
+                ", host='" + host + '\'' +
+                ", filterType='" + filterType + '\'' +
+                ", filter='" + filter + '\'' +
+                ", operter='" + operter + '\'' +
+                ", order=" + order +
+                '}';
     }
 }

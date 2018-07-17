@@ -5,7 +5,7 @@
 
     <groupId>com.gateway</groupId>
     <artifactId>zl_gateway</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>zl_gateway</name>
@@ -24,18 +24,20 @@
         <java.version>1.8</java.version>
         <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
         <spring-tuple.version>1.0.0.RELEASE</spring-tuple.version>
+        <fastjson.version>1.2.41</fastjson.version>
+        <janino.version>3.0.7</janino.version>
     </properties>
 
     <dependencies>
 
         <!--本地jar-->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tuple</artifactId>
-            <version>1.0.0.RELEASE</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/spring-tuple-1.0.0.RELEASE.jar</systemPath>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.springframework</groupId>-->
+            <!--<artifactId>spring-tuple</artifactId>-->
+            <!--<version>1.0.0.RELEASE</version>-->
+            <!--<scope>system</scope>-->
+            <!--<systemPath>${project.basedir}/lib/spring-tuple-1.0.0.RELEASE.jar</systemPath>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -46,7 +48,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -64,11 +65,11 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.isomorphism</groupId>
-            <artifactId>token-bucket</artifactId>
-            <version>1.7</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.isomorphism</groupId>-->
+            <!--<artifactId>token-bucket</artifactId>-->
+            <!--<version>1.7</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -80,11 +81,25 @@
             <version>2.9.0</version>
         </dependency>
 
+        <!-- Json解析 -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${fastjson.version}</version>
+        </dependency>
+
         <!--<dependency>-->
             <!--<groupId>org.springframework</groupId>-->
             <!--<artifactId>spring-tuple</artifactId>-->
             <!--<version>1.0.0.RELEASE</version>-->
         <!--</dependency>-->
+
+        <dependency>
+            <groupId>org.codehaus.janino</groupId>
+            <artifactId>janino</artifactId>
+            <version>${janino.version}</version>
+        </dependency>
+
     </dependencies>
 
     <repositories>

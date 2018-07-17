@@ -17,6 +17,9 @@ center 11000
 status_save 11004
 storage 11005
 
+eureka 5555,5556
+gateway 11007
+
 
 screen -S uwb_test ´´½¨screen 
 
