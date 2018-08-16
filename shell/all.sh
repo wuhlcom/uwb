@@ -9,16 +9,18 @@
 # :set ff=unix
 set -e
 #set -u
-SHELL_HOME=/etc/init.d
-SCRIPT_NAME=${SHELL_HOME}/all.sh
+SHELL_HOME=/home/project/uwb
+SCRIPT_NAME=${SHELL_HOME}/shell/all.sh
 
 d_start(){
+
  ${SHELL_HOME}/zookeeper.sh start
  ${SHELL_HOME}/kafka.sh start
  ${SHELL_HOME}/redis.sh start
  ${SHELL_HOME}/nginx.sh start
- ${SHELL_HOME}/fdfs_trackerd start
- ${SHELL_HOME}/fdfs_storaged start
+ #${SHELL_HOME}/fdfs_trackerd start
+ #${SHELL_HOME}/fdfs_storaged start
+ sleep 20s
  ${SHELL_HOME}/services.sh start 
  # ${SHELL_HOME}/alrtls.sh start 
 }

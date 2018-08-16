@@ -29,9 +29,9 @@ public class KafkaConsumerBatchListener {
     @KafkaListener(topics = "${spring.kafka.consumer.topic}", containerFactory = "kafkaListenerContainerFactory")
     public void listener(List<ConsumerRecord<String, String>> records, Acknowledgment ack) {
         logger.info("========================批量Poll到的数组大小:" + records.size() + "========================");
-        for (ConsumerRecord<String, String> record : records) {
-            logger.info("consumer value:{}", record.value());
-        }
+        // for (ConsumerRecord<String, String> record : records) {
+        //     logger.info("consumer value:{}", record.value());
+        // }
 
         try {
             Map<String, List<JSONObject>> msgMap = kafkaService.kafkaMsg(records);

@@ -24,10 +24,14 @@ public class KafkaServiceImpl implements IKafkaService {
         for (ConsumerRecord<String, String> record : records) {
             Map<String, Object> map = JSONObject.parseObject(record.value().toString(), Map.class);
             Integer alarmStatus = (Integer) map.get("alarm");
-            if (alarmStatus.intValue() == ConstantUtil.ALARM_ON.intValue() || alarmStatus.intValue() == ConstantUtil.ALARM_OFF.intValue()) {
-                alarmInfo.setSw(alarmStatus);
-                break;
-            } else {
+            if (alarmStatus != null) {
+                if (alarmStatus.intValue() == ConstantUtil.ALARM_ON.intValue() || alarmStatus.intValue() == ConstantUtil.ALARM_OFF.intValue()) {
+                    alarmInfo.setSw(alarmStatus);
+                    break;
+                } else {
+                    alarmInfo = null;
+                }
+            }else{
                 alarmInfo = null;
             }
         }

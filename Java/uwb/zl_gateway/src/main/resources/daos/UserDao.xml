@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.dbs.daos.UserDao">
+
+    <resultMap id="userMap" type="com.zhilutec.dbs.entities.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getUserByName" parameterType="Map" resultMap="userMap">
+        select id,username,password
+        from zl_gw_user
+        where 1=1
+        <if test=" username!=null and username != '' ">
+            AND username =#{username}
+        </if>
+    </select>
+
+</mapper>

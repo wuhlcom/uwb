@@ -1,7 +1,7 @@
 package com.zhilutec.config.gateway;
 
-import com.zhilutec.services.IRouteService;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.gateway.discovery.DiscoveryClientRouteDefinitionLocator;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
@@ -18,8 +18,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.Resource;
-
+@EnableDiscoveryClient
 @Configuration
 public class RouteConfiguration {
     //这里为支持的请求头，如果有自定义的header字段请自己添加（不知道为什么不能使用*）
@@ -28,9 +27,6 @@ public class RouteConfiguration {
     private static final String ALLOWED_ORIGIN = "*";
     private static final String ALLOWED_Expose = "*";
     private static final String MAX_AGE = "18000L";
-
-    @Resource
-    IRouteService routeService;
 
     @Bean
     public WebFilter corsFilter() {
@@ -54,19 +50,6 @@ public class RouteConfiguration {
         };
     }
 
-    // @Bean
-    // public  dynamicRoutes() {
-    //     return new DynamicRoutes(gatewayProperties);
-    // }
-
-    /**
-     *
-     *如果使用了注册中心（如：Eureka），进行控制则需要增加如下配置
-     */
-    // @Bean
-    // public RouteDefinitionLocator discoveryClientRouteDefinitionLocator(DiscoveryClient discoveryClient,DiscoveryLocatorProperties properties) {
-    //     return new DiscoveryClientRouteDefinitionLocator(discoveryClient,properties);
-    // }
 
     // @Bean
     // public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
@@ -84,27 +67,26 @@ public class RouteConfiguration {
     //     return new RedisRateLimiter(1, 2);
     // }
 
-    //spring security路由安全相关的配置
-    // @Bean
-    // SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) throws Exception {
-    //     return http.httpBasic().and()
-    //             .csrf().disable()
-    //             .authorizeExchange()
-    //             .pathMatchers("/anything/**").authenticated()
-    //             .anyExchange().permitAll()
-    //             .and()
-    //             .build();
-    // }
-    //
-    // @Bean
-    // public MapReactiveUserDetailsService reactiveUserDetailsService() {
-    //     UserDetails user = User.withDefaultPasswordEncoder().username("user").password("password").roles("USER").build();
-    //     return new MapReactiveUserDetailsService(user);
-    // }
 
+    @Bean
+    public DiscoveryLocatorProperties discoveryLocatorProperties() {
+        return new DiscoveryLocatorProperties();
+    }
+
+
+    /**
+     *
+     *如果使用了注册中心（如：Eureka），进行控制则需要增加如下配置,从eureka获取路由
+     */
     @Bean
     public RouteDefinitionLocator discoveryClientRouteDefinitionLocator(DiscoveryClient discoveryClient, DiscoveryLocatorProperties properties) {
         return new DiscoveryClientRouteDefinitionLocator(discoveryClient, properties);
     }
+
+
+    // @Bean
+    // public RouteDefinitionLocator discoveryClientRouteDefinitionLocator(DiscoveryClient discoveryClient) {
+    //     return new DiscoveryClientRouteDefinitionLocator(discoveryClient);
+    // }
 
 }

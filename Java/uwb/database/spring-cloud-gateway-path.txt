@@ -1,0 +1,64 @@
+sping路由简化版本只有path类型无过滤
+
+{
+  "routeId": "uwb-websocket",
+  "url": "ws://192.168.10.232:11006",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/websocket/**"
+    }	
+  ],
+  "filters": [    
+  ]
+}
+
+{
+  "routeId": "uwb-producer",
+  "url": "http://192.168.10.232:11002",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/producer/**"
+    }
+  ],
+  "filters": [    
+  ]
+}
+
+{
+  "routeId": "uwb-resources",
+  "url": "http://192.168.10.232:11003",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/resources/**"
+    }	
+  ],
+  "filters": [
+  ]
+}
+
+{
+  "routeId": "uwb-fastdfs",
+  "url": "http://192.168.10.232:11001",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/fastdfs/**"
+    }
+  ],
+  "filters": [    
+  ]
+}
+
+
+

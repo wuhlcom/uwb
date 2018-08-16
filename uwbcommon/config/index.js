@@ -3,9 +3,6 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
-// const URL = '192.168.10.232:80'
-// const URL = 'localhost:80'
-// const URL = '192.168.10.232:80'
 const url = require('../static/js/url.js')
 
 module.exports = {
@@ -14,34 +11,34 @@ module.exports = {
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      '/resources': {
-        target: 'http://' + url.url + '/uwb/resources',
+      '/uwb': {
+        target: 'http://' + url.url + '/uwb',
         changeOrigin: true,
         pathRewrite: {
-          '^/resources': ''
+          '^/uwb': ''
         }
       },
-      '/fastdfs': {
-        target: 'http://' + url.url + '/uwb/fastdfs',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/fastdfs': ''
-        }
-      },
-      '/producer': {
-        target: 'http://' + url.url + '/uwb/producer',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/producer': ''
-        }
-      },
-      '/permission': {
-        target: 'http://' + url.url + '/uwb/permission',
-        changeOrigin: true,
-        pathRewrite: {
-          '^/permission': ''
-        }
-      }
+      // '/fastdfs': {
+      //   target: 'http://' + url.url + '/fastdfs',
+      //   changeOrigin: true,
+      //   pathRewrite: {
+      //     '^/fastdfs': ''
+      //   }
+      // },
+      // '/producer': {
+      //   target: 'http://' + url.url + '/producer',
+      //   changeOrigin: true,
+      //   pathRewrite: {
+      //     '^/producer': ''
+      //   }
+      // },
+      // '/permission': {
+      //   target: 'http://' + url.url + '/uwb/permission',
+      //   changeOrigin: true,
+      //   pathRewrite: {
+      //     '^/permission': ''
+      //   }
+      // }
     },
     // Various Dev Server settings
     // host: '192.168.10.77', // can be overwritten by process.env.HOST

@@ -20,6 +20,7 @@
         <div
           ref="map"
           data-panning="false"
+          :style="imgSize"
           @mousedown="onPanStart($event)"
           @mousemove="onPanning($event)"
           @mouseup="onPanEnd($event)"

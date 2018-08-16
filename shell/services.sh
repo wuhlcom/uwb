@@ -9,19 +9,15 @@
 #注意中文 - 与英文 - 区别
 # :set ff?
 # :set ff=unix
-# nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_permission-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 & 
 # nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_resources-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 & 
 # nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &  
 # nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_producer-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
 # nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_center-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
-# nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_alarm-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
-# nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_alarm_save-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
-# nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_coordinate-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
-# nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_coordinate_save-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
 # nohup java -jar -Xms64m -Xmx256m /home/project/uwb/zl_status_save-1.0.0-uwb-SNAPSHOT.jar >/dev/null 2>&1 &
 # specify the config
-#java -jar zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar -Dspring.config.location=E:\svn\src\Java\uwb\zl_fastdfs\target\application.properties
-#java -jar zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar --fastdfs.tracker_servers=192.168.10.196:22122
+#java -jar -Xms64m -Xmx256m zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar -Dspring.config.location=E:\svn\src\Java\uwb\zl_fastdfs\target\application.properties
+#nohup java -jar -Xms64m -Xmx256m zl_producer-1.0.0-uwb-SNAPSHOT.jar -Dspring.config.location=/home/project/uwb/config/producer/application.propertie > /dev/null 2>&1 &
+#java -jar -Xms64m -Xmx256mzl_fastdfs-1.0.0-uwb-SNAPSHOT.jar --fastdfs.tracker_servers=192.168.10.196:22122
 #set -e 当命令以非零状态退出时，则退出shell
 #set -u 当变量为空时报错
 
@@ -36,6 +32,10 @@ SCRIPTNAME=/etc/init.d/${NAME}
 CONF_HOME=/home/project/uwb/config
 SLEEP=5s
 SRV_SLEEP=10s
+
+
+EUREKA=eureka
+GATEWAY=gateway
 RESOURCES=resources
 FASTDFS=fastdfs
 PRODUCER=producer
@@ -43,7 +43,7 @@ CENTER=center
 STATUS_SAVE=status_save
 WEBSOCKET=websocket
 STORAGE=storage
-SERVICES=($RESOURCES $FASTDFS $PRODUCER $CENTER  $STATUS_SAVE $WEBSOCKET $STORAGE)
+SERVICES=($EUREKA $GATEWAY $RESOURCES $FASTDFS $PRODUCER $CENTER  $STATUS_SAVE $WEBSOCKET $STORAGE)
 USAGE="Usage: $SCRIPTNAME {startOne|stopOne|startParam|start|stop|restart|restartOne}"
 
 SRV_NAME=$2
@@ -102,6 +102,8 @@ help(){
 	Author: wuhongliang
 	License: zhilutec	
 --------------all uwb services name---------------------------
+     | ${EUREKA} |
+     | ${GATEWAY} |
      | ${RESOURCES} |
      | ${FASTDFS} |
      | ${PRODUCER} |
@@ -189,7 +191,12 @@ stopAll(){
 }
 
 startService(){
+   if [ "${SRV_NAME}" == "${EUREKA}" ]||[ "${SRV_NAME}" == "${GATEWAY}" ];then
+	CONF_PATH=${CONF_HOME}/${SRV_NAME}/application.yml
+   else
     CONF_PATH=${CONF_HOME}/${SRV_NAME}/application.properties
+   fi
+
 	
 	if [ "${SRV_NAME}" == "${FASTDFS}" ];then
 	  if [ ${XMX} -lt 256 ];then

@@ -1,10 +1,10 @@
 package com.zhilutec.services;
 
-import com.zhilutec.db.CustomerRoute;
-
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public interface IRedisService {
 
@@ -14,6 +14,12 @@ public interface IRedisService {
      */
     void flushdb();
 
+
+    void add(String key, String value, Long expireTime, TimeUnit timeUnit);
+
+    String get(String key);
+
+    Boolean hasKey(String key);
 
     /**生成key*/
     String genRedisKey(String keyPre, Object o);
@@ -25,6 +31,8 @@ public interface IRedisService {
     void hashAddMap(String key, Map map, Long expire);
 
     Map<String, Object> hashGetMap(String key);
+
+    List<Object> hashMGet(String key, Collection<String> collection);
 
     Map hashGetMap(String keyPre, Object o);
 
@@ -65,7 +73,31 @@ public interface IRedisService {
 
     List<Object> hashValues(String key);
 
+    Set<String> matchedKeys(String keyPre);
+
     Set<String> keys(String keyPre);
 
-    List<CustomerRoute> routes(String keyPre);
+    Boolean zSetAdd(String keyPre, String value, Double score);
+
+    Boolean zSetAdd(String keyPre, Set<String> members);
+
+    void zSetDel(String keyPre, Set<String> members);
+
+    void zSetDel(String keyPre, String member);
+
+    Set<String> zSetRange(String keyPre, Long min, Long max);
+
+    Set<String> zSetRangeByScore(String keyPre, double min, double max, long offset, long limit);
+
+    Set<String> zSetReverseRange(String keyPre, Long start, Long end);
+
+    Set<String> zSetReverseRangeByScore(String keyPre, double min, double max, long offset, long limit);
+
+    Long zSetRank(String keypre, String member);
+
+    Long zSetReverseRank(String keypre, String member);
+
+    Long zSetCount(String keypre, Double min, Double max);
+
+    Long zSetCard(String keypre);
 }

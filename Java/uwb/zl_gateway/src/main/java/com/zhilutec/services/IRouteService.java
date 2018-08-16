@@ -1,23 +1,38 @@
 package com.zhilutec.services;
 
 import com.alibaba.fastjson.JSONObject;
-import com.zhilutec.db.CustomerRoute;
-import org.springframework.cloud.gateway.route.RouteDefinition;
+import com.zhilutec.dbs.entities.CommonRoute;
+import com.zhilutec.dbs.entities.PathRoute;
 import reactor.core.publisher.Mono;
+
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
 public interface IRouteService {
-    //从配置文件中获取静态配置的路由
-    List<RouteDefinition> getPoperRoutes();
+    //获取redis中所有的路由缓存
+    List<CommonRoute> getRedisRoutes(String keyPre);
 
-    //定义路由
-    RouteDefinition genRoute(CustomerRoute customerRoute, Map<String, String> filterMap);
 
-    //添加路由
-    Mono<Void> add(CustomerRoute customerRoute, Map<String, String> filterMap);
+    //获取redis中所有的路由缓存
+    //直接分页查询
+    // Set<String> routeIds = redisService.zSetReverseRangeByScore(ConstantUtil.GW_SORT_KEY,
+    //         NEGATIVE_INFINITY,
+    //         POSITIVE_INFINITY,
+    //         offset,
+    //         limit);
+    Map<String, Object> getPathRoutes(JSONObject jsonObject);
 
-    //添加路由
-    Mono<Void> add(JSONObject jsonObject);
+    String getPathRouteRs(JSONObject jsonObject);
+
+    //直接添加路由到redis
+    String addRedisRoute(JSONObject jsonObject);
+
+    String updateRedisRoute(JSONObject jsonObject);
+
+    void delRedisRoute(JSONObject jsonObject);
+
+    //添加路由到gateway
+    Mono<Void> add(JSONObject jsonObject) throws URISyntaxException;
 
 }

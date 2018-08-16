@@ -65,7 +65,7 @@ body {
 	function initWs() {
 		//check if your browser supports WebSocket  
 		if ('WebSocket' in window) {
-			websocket = new WebSocket("ws://192.168.10.188:11007/uwb/websocket/wsmsg");
+			websocket = new WebSocket("ws://192.168.10.188:11006/uwb/websocket/wsmsg");
 		} else {
 			alert('Sorry, websocket not supported by your browser.')
 		}

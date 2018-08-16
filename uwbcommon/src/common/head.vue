@@ -265,7 +265,7 @@ export default {
     },
     getWebSocketURL() {
       if (window.location.port === '9999') {
-        return 'ws://192.168.10.232:80/alarm/alarms';
+        return 'ws://192.168.10.232:80/uwb/websocket/wsmsg';
       }
       return ((window.location.protocol === 'https:') ? 'wss://' : 'ws://') + window.location.host + '/uwb/websocket/wsmsg'
     },

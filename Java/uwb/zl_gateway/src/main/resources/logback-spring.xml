@@ -28,8 +28,7 @@
     <property name="ConsoleLogLevel" value="info"/>
     <property name="PackageLogLevel" value="info"/>
     <property name="RootLogLevel" value="info"/>
-    <property name="IbatisLogLevel" value="trace"/>
-    <property name="SqlLogLevel" value="info"/>
+    <property name="GwLogLevel" value="info"/>
 
     <!-- 用来定义变量值的标签， 有两个属性，name和value；其中name的值是变量的名称，value的值时变量定义的值。 -->
     <!-- 通过定义的值会被插入到logger上下文中。定义变量后，可以使“${}”来使用变量。 -->
@@ -106,31 +105,21 @@
         <appender-ref ref="ROLLINGFILE"/>
     </logger>
 
-    <!--<logger name="com.apache.ibatis" level="TRACE" />-->
-    <logger name="com.apache.ibatis" level="${IbatisLogLevel}"/>
+    <!--<logger name="org.springframework.cloud.gateway" level="${GwLogLevel}" additivity="false">-->
+        <!--<appender-ref ref="STDOUT"/>-->
+        <!--<appender-ref ref="ROLLINGFILE"/>-->
+    <!--</logger>-->
 
-    <!--<logger name="java.sql" level="TRACE" additivity="false">-->
-    <logger name="java.sql" level="${SqlLogLevel}}" additivity="false">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="ROLLINGFILE"/>
-    </logger>
-
-    <!-- <logger name="java.sql.Statement" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" /> <appender-ref ref="ROLLINGFILE" /> </logger>
-        <logger name="java.sql.PreparedStatement" level="DEBUG" additivity="false">
-        <appender-ref ref="STDOUT" /> <appender-ref ref="ROLLINGFILE" /> </logger>
-        <logger name="java.sql.ResultSet" level="DEBUG" additivity="false"> <appender-ref
-        ref="STDOUT" /> <appender-ref ref="ROLLINGFILE" /> </logger> -->
+    <!--<logger name="org.springframework.data.redis" level="${GwLogLevel}" additivity="false">-->
+        <!--<appender-ref ref="STDOUT"/>-->
+        <!--<appender-ref ref="ROLLINGFILE"/>-->
+    <!--</logger>-->
 
 
-    <!-- <logger name="org.springframework" level="INFO" additivity="false">
-        <appender-ref ref="STDOUT" /> <appender-ref ref="ROLLINGFILE" /> </logger>
-        <logger name="org.apache.velocity" level="INFO" additivity="false"> <appender-ref
-        ref="STDOUT" /> <appender-ref ref="ROLLINGFILE" /> </logger> <logger name="com.atomikos.jdbc.AtomikosConnectionProxy"
-        level="DEBUG" additivity="false"> <appender-ref ref="STDOUT" /> <appender-ref
-        ref="ROLLINGFILE" /> </logger> <logger name="com.atomikos.datasource.xa.XAResourceTransaction"
-        level="DEBUG" additivity="false"> <appender-ref ref="STDOUT" /> <appender-ref
-        ref="ROLLINGFILE" /> </logger> -->
+    <!--<logger name=" org.springframework.security" level="debug" additivity="false">-->
+        <!--<appender-ref ref="STDOUT"/>-->
+        <!--<appender-ref ref="ROLLINGFILE"/>-->
+    <!--</logger>-->
 
 
     <!-- root节点是必选节点，用来指定最基础的日志输出级别，只有一个level属性。 -->

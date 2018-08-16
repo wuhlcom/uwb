@@ -10,8 +10,10 @@
 set -e
 #set -u
 KAFKA_HOME=/opt/kafka/kafka_2.11
+BASE_HOME=/home/project/uwb
 KAFKA_SCRIPT=$KAFKA_HOME/bin/kafka-server-start.sh
-CONF=/etc/kafka/server.properties
+#CONF=/etc/kafka/server.properties
+CONF=${BASE_HOME}/config/kafka/server.properties
 ZOO=
 
 # check file exists

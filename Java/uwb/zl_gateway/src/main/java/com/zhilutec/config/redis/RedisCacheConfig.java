@@ -1,5 +1,6 @@
 package com.zhilutec.config.redis;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
@@ -7,6 +8,8 @@ import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisPassword;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -16,7 +19,7 @@ import java.lang.reflect.Method;
 
 /**
  * 用JdkSerializationRedisSerializer序列化的话，被序列化的对象必须实现Serializable接口
- *
+ * <p>
  * 如果需要保存对象为json的话推荐使用JacksonJsonRedisSerializer，它不仅可以将对象序列化，
  * 还可以将对象转换为json字符串并保存到redis中，但需要和jackson配合一起使用。
  * 用JacksonJsonRedisSerializer序列化的话，被序列化的对象不用实现Serializable接口。
@@ -51,42 +54,44 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
     @Value("${spring.redis.timeout}")
     private Integer tiemout;
 
-    @Bean
-    JedisPoolConfig jedisPoolConfig() {
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxTotal(maxActive);
-        jedisPoolConfig.setMaxIdle(maxIdle);
-        jedisPoolConfig.setMinIdle(minIdle);
-        return jedisPoolConfig;
-    }
+    // @Autowired
+    // private RedisConnectionFactory redisConnectionFactory;
 
-    @Bean
-    public JedisConnectionFactory jedisConnectionFactory(JedisPoolConfig poolConfig) {
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(poolConfig);
-        jedisConnectionFactory.setHostName(host);
-        jedisConnectionFactory.setPort(port);
-        jedisConnectionFactory.setPassword(password);
-        jedisConnectionFactory.setDatabase(database);
-        jedisConnectionFactory.setTimeout(tiemout);
-        jedisConnectionFactory.setUsePool(true);
-        jedisConnectionFactory.setPoolConfig(poolConfig);
-        return jedisConnectionFactory;
-    }
+    // @Bean
+    // public JedisPoolConfig jedisPoolConfig() {
+    //     JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+    //     jedisPoolConfig.setMaxTotal(maxActive);
+    //     jedisPoolConfig.setMaxIdle(maxIdle);
+    //     jedisPoolConfig.setMinIdle(minIdle);
+    //     return jedisPoolConfig;
+    // }
 
+
+    //spring 1.5
+    // @Bean
+    // public JedisConnectionFactory jedisConnectionFactory(JedisPoolConfig poolConfig) {
+    //     JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(poolConfig);
+    //     jedisConnectionFactory.setHostName(host);
+    //     jedisConnectionFactory.setPort(port);
+    //     jedisConnectionFactory.setPassword(password);
+    //     jedisConnectionFactory.setDatabase(database);
+    //     jedisConnectionFactory.setTimeout(tiemout);
+    //     jedisConnectionFactory.setUsePool(true);
+    //     jedisConnectionFactory.setPoolConfig(poolConfig);
+    //     return jedisConnectionFactory;
+    // }
+
+
+    // spring 2.0
     @Bean
-    public KeyGenerator keyGenerator() {
-        return new KeyGenerator() {
-            @Override
-            public Object generate(Object target, Method method, Object... params) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(target.getClass().getName());
-                sb.append(method.getName());
-                for (Object obj : params) {
-                    sb.append(obj.toString());
-                }
-                return sb.toString();
-            }
-        };
+    public JedisConnectionFactory jedisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
+        RedisPassword redisPassword = RedisPassword.of(password);
+        config.setDatabase(database);
+        config.setHostName(host);
+        config.setPassword(redisPassword);
+        config.setPort(port);
+        return new JedisConnectionFactory(config);
     }
 
 
@@ -110,12 +115,6 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
 
-        // 使用Jackson2JsonRedisSerialize 替换默认序列化
-        // Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-        // ObjectMapper objectMapper = new ObjectMapper();
-        // objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        // objectMapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        // jackson2JsonRedisSerializer.setObjectMapper(objectMapper);
 
         //开启事务支持
         redisTemplate.setEnableTransactionSupport(true);
@@ -125,8 +124,6 @@ public class RedisCacheConfig extends CachingConfigurerSupport {
         redisTemplate.setHashKeySerializer(new StringRedisSerializer());
 
         // 设置自定义value的序列化规则
-        // redisTemplate.setValueSerializer(new EntityRedisSerializer());
-        // redisTemplate.setHashValueSerializer(new EntityRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         redisTemplate.setHashValueSerializer(new StringRedisSerializer());
         redisTemplate.afterPropertiesSet();

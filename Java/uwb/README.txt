@@ -5,6 +5,7 @@
    zl_permission合并到zl_resources
    zl_alarm,zl_coordinate合并到zl_websocket
 3 加入了mia平台的部署时的kakfa和zookeeper相关的配置jar，依赖包
+
 4 服务端口列表 
 
 fastdfs 11001
@@ -20,12 +21,22 @@ storage 11005
 eureka 5555,5556
 gateway 11007
 
+其中fastdfs producer要根据环境修改配置文件中的IP地址
 
+5 创建后台运行屏幕
 screen -S uwb_test 创建screen 
-
 screen -R uwb_test 重新登录screen
-
 ctrl+a+d 关掉screen
+
+6 环境相关依赖
+  nginx:1.12.2
+  fastdfs:trackerd storaged
+  kafka:
+  zookeeper
+  java:jdk或jre 1.8
+  mysql
+  redis
+  
 
 
 

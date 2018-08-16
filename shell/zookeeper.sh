@@ -10,12 +10,15 @@ set -e
 #set -u
 DESC="zookeeper daemon"
 NAME=zookeepser.sh
-CONF=/etc/zookeeper/zookeeper.cfg
+#CONF=/etc/zookeeper/zookeeper.cfg
+BASE_HOME=/home/project/uwb
+CONF=${BASE_HOME}/config/zookeeper/zookeeper.cfg
 if [ -n "$2" ]; then
   CONF=$2
 fi
 DAEMON=/opt/zookeeper-3.4.10/bin/zkServer.sh
 SCRIPTNAME=/etc/init.d/$NAME
+SCRIPTNAME=${BASE_HOME}/shell/$NAME
 #check file exist
 if [ ! -f $DAEMON ]; then
   echo "file $DAEMON does not exist!"

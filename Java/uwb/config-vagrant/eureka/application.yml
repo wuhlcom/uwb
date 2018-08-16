@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: eureka-cluster
+    admin:
+      jmx-name:
+#  profiles:
+#    active: peer1
+server:
+  port: 5555
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  server:
+        enable-self-preservation: false

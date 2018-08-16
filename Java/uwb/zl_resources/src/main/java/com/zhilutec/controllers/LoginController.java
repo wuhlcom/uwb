@@ -28,15 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginController {
 
     public final Logger logger = LoggerFactory.getLogger(this.getClass());
-    @Autowired
-    private ValueOperations<String, Object> valueOperations;
-
-    @Autowired
-    private HashOperations<String, String, Object> hashOperations;
-
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
     @Resource
     private ILoginService loginService;
 
