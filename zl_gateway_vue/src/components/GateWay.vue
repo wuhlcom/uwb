@@ -24,7 +24,7 @@
             <el-input disabled v-model="form.order" auto-complete="off" placeholder="0"></el-input>
           </el-form-item>      
                <el-form-item label="路由地址" :label-width="formLabelWidth"  prop="url">
-            <el-input v-model="form.url" auto-complete="off" placeholder="192.168.10.232:11003或uwb-resources"></el-input>
+            <el-input v-model="form.url" auto-complete="off" placeholder="192.168.10.232:11003或UWB-RESOURCES"></el-input>
           </el-form-item> 
           <el-form-item label="路由地址类型" :label-width="formLabelWidth"  prop="urlType">
           <el-select v-model="form.urlType" placeholder="请选择">
@@ -123,7 +123,7 @@ export default {
           {
             min: 3,
             max: 64,
-            message: "路由ID长度 3 ~ 64 个字符",
+            message: "路由ID长度 1 ~ 64 个字符",
             trigger: "blur"
           }
         ],
@@ -152,9 +152,9 @@ export default {
             trigger: "blur"
           },
           {
-            min: 5,
+            min: 3,
             max: 64,
-            message: "路由地址 5 ~ 64 个字符",
+            message: "路由地址 3 ~ 64 个字符",
             trigger: "blur"
           }
         ],
@@ -219,7 +219,7 @@ export default {
       this.form.routeId = row.routeId;
       this.$http({
         method: "post",
-        url: URL.delete,
+        url: API.delete,
         data: this.form
       }).then(res => {
         this.getRoutes();

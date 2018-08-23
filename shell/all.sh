@@ -9,18 +9,21 @@
 # :set ff=unix
 set -e
 #set -u
-SHELL_HOME=/home/project/uwb
-SCRIPT_NAME=${SHELL_HOME}/shell/all.sh
+SHELL_HOME=/home/project/uwb/shell
+SCRIPT_NAME=${SHELL_HOME}/all.sh
 
 d_start(){
 
  ${SHELL_HOME}/zookeeper.sh start
+ sleep 3s
  ${SHELL_HOME}/kafka.sh start
+ sleep 3s
  ${SHELL_HOME}/redis.sh start
+ sleep 3s
  ${SHELL_HOME}/nginx.sh start
  #${SHELL_HOME}/fdfs_trackerd start
  #${SHELL_HOME}/fdfs_storaged start
- sleep 20s
+ sleep 10s
  ${SHELL_HOME}/services.sh start 
  # ${SHELL_HOME}/alrtls.sh start 
 }

@@ -27,7 +27,6 @@ const router = new Router({
 router.beforeEach((to, from, next) => {
   const nextRoute = ['gateway'];
   let isLogin = sessionStorage.getItem('isLogin')
-  console.log(isLogin)
   // let isLogin = sessionStorage;  // 是否登录
   // 未登录状态；当路由到nextRoute指定页时，跳转至login
   if (nextRoute.indexOf(to.name) >= 0) {
