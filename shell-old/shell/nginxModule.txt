@@ -1,0 +1,9 @@
+ 查看nginx编译安装时安装了哪些模块
+nginx -V
+加入需要安装的模块，重新编译，如这里添加–add-module=/data/software/ngx_http_google_filter_module
+# ./configure --prefix=/usr/local/nginx --with-http_ssl_module --with-http_sub_module --with-http_gzip_static_module --with-http_stub_status_module --add-module=/data/software/ngx_http_substitutions_filter_module --add-module=/data/software/ngx_http_google_filter_module
+# make    //千万不要make install，不然就真的覆盖了
+
+4. 替换nginx二进制文件:
+# cp /usr/local/nginx/sbin/nginx /usr/local/nginx/sbin/nginx.bak
+# cp ./objs/nginx /usr/local/nginx/sbin/

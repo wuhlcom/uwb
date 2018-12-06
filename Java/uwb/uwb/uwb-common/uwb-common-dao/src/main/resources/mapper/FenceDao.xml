@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.uwb.dao.FenceDao">
+
+    <resultMap id="fencesMap" type="com.zhilutec.uwb.common.pojo.FenceRs">
+        <id property="type" column="type"/>
+        <collection property="fences" ofType="com.zhilutec.uwb.entity.Fence">
+            <result property="fenceName" column="fence_name" jdbcType="VARCHAR"/>
+            <result property="fenceCode" column="fence_code" jdbcType="VARCHAR"/>
+            <result property="points" column="points" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+    <!--resultMap的值为上面resultMap的id -->
+    <select id="getFencesByType" parameterType="java.lang.Integer" resultMap="fencesMap">
+        select fence_name,fence_code,points,type
+        from uwb_fences
+        WHERE isdel=1
+        GROUP BY type,fence_code
+        <if test="_parameter !=null ">HAVING type=#{_parameter}</if>
+        order by type
+    </select>
+
+    <resultMap id="fencesList" type="com.zhilutec.uwb.entity.Fence">
+        <id property="id" column="id"/>
+        <result property="fenceName" column="fence_name" jdbcType="VARCHAR"/>
+        <result property="fenceCode" column="fence_code" jdbcType="VARCHAR"/>
+        <result property="points" column="points" jdbcType="VARCHAR"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="getFences" parameterType="com.zhilutec.uwb.entity.Fence" resultMap="fencesList">
+        select F.FENCE_NAME,F.FENCE_CODE,F.POINTS,F.TYPE,F.REMARK
+        from uwb_fences F
+        where isdel=1
+        <if test=" fenceName!=null  and fenceName != '' ">
+            AND F.FENCE_NAME LIKE CONCAT(CONCAT('%', #{fenceName, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test=" fenceCode!=null  and fenceCode != '' ">
+            AND F.FENCE_CODE =#{fenceCode, jdbcType=VARCHAR}
+        </if>
+        <if test="type!=null ">
+            AND F.TYPE =#{type, jdbcType=INTEGER}
+        </if>
+        <if test="remark!= null and remark!= '' ">
+            AND F.REMARK LIKE CONCAT(CONCAT('%', #{remark, jdbcType=VARCHAR}),'%')
+        </if>
+        order by
+        <choose>
+            <when test="sort!=null and sort !=''">
+                ${sort}
+                <if test="order!=null and order !=''">
+                    ${order}
+                </if>
+            </when>
+            <otherwise>
+                F.CREATED_AT DESC, F.TYPE ASC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

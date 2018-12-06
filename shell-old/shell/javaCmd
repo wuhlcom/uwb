@@ -1,0 +1,24 @@
+  2表示标准错误输出 1表示标准输出
+cmd > file 2>&1 把 stdout 和 stderr 一起重定向到 file 文件中
+nohup java -jar -Xms64m -Xmx256m zl_permission-1.0.0-uwb-SNAPSHOT.jar > zl_permission.log 2>&1 & 
+nohup java -jar -Xms64m -Xmx256m zl_resources-1.0.0-uwb-SNAPSHOT.jar > zl_resources.log 2>&1 & 
+nohup java -jar -Xms64m -Xmx256m zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar > zl_fastdfs.log 2>&1 &  
+nohup java -jar -Xms64m -Xmx256m zl_producer-1.0.0-uwb-SNAPSHOT.jar > zl_producer.log 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_center-1.0.0-uwb-SNAPSHOT.jar > zl_center.log 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_alarm-1.0.0-uwb-SNAPSHOT.jar > zl_alarm.log 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_alarm_save-1.0.0-uwb-SNAPSHOT.jar > zl_alarm_save.log 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_coordinate-1.0.0-uwb-SNAPSHOT.jar > zl_coordinate.log 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_coordinate_save-1.0.0-uwb-SNAPSHOT.jar > zl_coordinate_save.log 2>&1 &
+
+
+>/dev/null 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_permission-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 & 
+nohup java -jar -Xms64m -Xmx256m zl_resources-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 & 
+nohup java -jar -Xms64m -Xmx256m zl_fastdfs-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &  
+nohup java -jar -Xms64m -Xmx256m zl_producer-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_center-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_alarm-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_alarm_save-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_coordinate-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &
+nohup java -jar -Xms64m -Xmx256m zl_coordinate_save-1.0.0-uwb-SNAPSHOT.jar > /dev/null 2>&1 &
+

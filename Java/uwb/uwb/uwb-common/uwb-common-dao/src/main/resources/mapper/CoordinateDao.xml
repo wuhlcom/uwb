@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.uwb.dao.CoordinateDao">
+
+    <resultMap id="coordinateMap" type="com.zhilutec.uwb.common.pojo.CoordinateRs">
+        <id property="personCode" column="person_code"/>
+        <collection property="coordinates" ofType="com.zhilutec.uwb.entity.Coordinate">
+            <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+            <result property="personCode" column="person_code" jdbcType="VARCHAR"/>
+            <result property="posX" column="pos_x" jdbcType="DECIMAL"/>
+            <result property="posY" column="pos_y" jdbcType="DECIMAL"/>
+            <result property="posZ" column="pos_z" jdbcType="DECIMAL"/>
+            <result property="type" column="type" jdbcType="INTEGER"/>
+            <result property="level" column="level" jdbcType="INTEGER"/>
+            <result property="tagId" column="tag_id" jdbcType="INTEGER"/>
+            <result property="timestamp" column="timestamp" jdbcType="BIGINT"/>
+        </collection>
+    </resultMap>
+
+    <!--resultMap的值为上面resultMap的id -->
+    <select id="getCoordinates" parameterType="java.util.Map" resultMap="coordinateMap">
+        SELECT tag_id,person_name,person_code,type,level,timestamp,pos_x,pos_y,pos_z
+        FROM uwb_coordinates
+        WHERE 1=1
+        <if test="startTime != null  and endTime != null ">
+            AND timestamp BETWEEN #{startTime,jdbcType=BIGINT} AND #{endTime,jdbcType=BIGINT}
+        </if>
+        <if test="personCodes != null and personCodes.size>0 ">
+            AND person_code IN
+            <foreach collection="personCodes" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY person_code,timestamp
+        ORDER BY timestamp
+    </select>
+
+
+    <resultMap id="coordinate" type="com.zhilutec.uwb.entity.Coordinate">
+        <id property="personCode" column="person_code" jdbcType="VARCHAR"/>
+        <result property="personName" column="person_name" jdbcType="VARCHAR"/>
+        <result property="posX" column="pos_x" jdbcType="DECIMAL"/>
+        <result property="posY" column="pos_y" jdbcType="DECIMAL"/>
+        <result property="posZ" column="pos_z" jdbcType="DECIMAL"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="level" column="level" jdbcType="INTEGER"/>
+        <result property="tagId" column="tag_id" jdbcType="INTEGER"/>
+        <result property="timestamp" column="timestamp" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <!--resultMap的值为上面resultMap的id -->
+    <select id="getCoordinatesByTime" parameterType="java.util.Map" resultMap="coordinate">
+        SELECT tag_id,person_name,person_code,type,level,timestamp,pos_x,pos_y,pos_z
+        FROM uwb_coordinates
+        WHERE 1=1
+        <if test="personCodes != null and personCodes.size>0 ">
+            AND person_code IN
+            <foreach collection="personCodes" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="startTime != null and endTime != null ">
+            AND timestamp BETWEEN #{startTime,jdbcType=BIGINT} AND #{endTime,jdbcType=BIGINT}
+        </if>
+        <!--  GROUP BY timestamp,type,tag_id
+               ORDER BY timestamp -->
+    </select>
+
+</mapper>

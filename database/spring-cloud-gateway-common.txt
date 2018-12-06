@@ -1,0 +1,90 @@
+1 通用格式的spring cloud gateway redis路由
+  包含多种路由规则，多个过滤条件
+  多个路由规则放入数组中，
+  多个过滤条件放入数组中
+2 此类路由暂未实现
+  以下内容是redis hash value中可能的内容
+{
+  "routeId": "uwb-websocket",
+  "url": "ws:192.168.10.232:11006",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/websocket/**"
+    }, 
+	{"routeType":"Method",
+     "route":"get"
+	}
+  ],
+  "filters": [
+    {
+      "filterType": "AddRequestHeader",
+      "filter": "X-Request-Foo, Bar"
+    }
+  ]
+}
+
+{
+  "routeId": "uwb-producer",
+  "url": "http://192.168.10.232:11002",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/producer/**"
+    }
+  ],
+  "filters": [
+    {
+      "filterType": "AddRequestHeader",
+      "filter": "X-Request-Foo, Bar"
+    }
+  ]
+}
+
+{
+  "routeId": "uwb-resources",
+  "url": "http://192.168.10.232:11003",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/resources/**"
+    }, 
+	{"routeType":"Method",
+     "route":"get"
+	}
+  ],
+  "filters": [
+    {
+      "filterType": "AddResponseHeader",
+      "filter": "X-Request-Foo, Bar"
+    },{"filterType":"PreserveHostHeader"}
+  ]
+}
+
+{
+  "routeId": "uwb-fastdfs",
+  "url": "http://192.168.10.232:11001",
+  "order":0,
+  "available":1,
+  "predicates": [
+    {
+      "routeType": "Path",
+      "route": "/uwb/fastdfs/**"
+    }
+  ],
+  "filters": [
+    {
+      "filterType": "AddRequestHeader",
+      "filter": "X-Request-Foo, Bar"
+    }
+  ]
+}
+
+
+

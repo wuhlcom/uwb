@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.uwb.dao.UserDao">
+
+    <resultMap id="userMap" type="com.zhilutec.uwb.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="roleId" column="role_id" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <select id="getUserByName" parameterType="java.util.Map" resultMap="userMap">
+        select u.id,u.username,u.password,ur.role_id
+        from uwb_users as  u, uwb_user_role as ur
+        where u.isdel=1 and u.id=ur.user_id
+        <if test=" username!=null and username != '' ">
+            AND u.username =#{username}
+        </if>
+        <if test=" available!=null ">
+            AND u.available =#{available}
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,4 @@
+1 系统启动硬件检测和驱动起动，
+2 启动rcS.d下的服务
+3 启动当前runlevel下的/etc/rcx.d下的服务,如runlevel为2，则查找/etc/rc2.d目录下的脚本
+4 启动rc.local中指定的脚本

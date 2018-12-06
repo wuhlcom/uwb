@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form id="iform" th:action="@{/list.html?save}" th:method="post" th:object="${animalForm}">
+    <table border="1">
+        <tr>
+            <th>动物名称</th>
+            <th>数量</th>
+            <th>备注</th>
+            <th>Action</th>
+        </tr>
+        <tr>
+            <td><input type="text" name="oname" value="" th:value="*{oname}"/></td>
+            <td><input type="text" name="ocount" value="" th:value="*{ocount}"/></td>
+            <td><input type="text" name="memo" value="" th:value="*{memo}"/></td>
+            <td><input type="submit" value="添加"/></td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

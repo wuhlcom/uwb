@@ -1,4 +1,0 @@
-{"routeId":"uwb-websocket","routeType":"Path","path":"/uwb/websocket/**","url":"http://192.168.10.232","port": 80}
-{"routeId":"uwb-producer","routeType":"Path","path":"/uwb/producer/**","url":"http://192.168.10.232","port": 80}
-{"routeId":"uwb-resources","routeType":"Path","path":"/uwb/resources/**","url":"http://192.168.10.232","port": 80}
-{"routeId":"uwb-fastdfs","routeType":"Path","path":"/uwb/fastdfs/**","url":"http://192.168.10.232","port": 80}

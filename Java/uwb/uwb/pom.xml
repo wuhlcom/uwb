@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zhilutec</groupId>
+    <artifactId>uwb</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <!--指定项目的spring boot的版本-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.9.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <modules>
+        <module>uwb-modules</module>
+        <module>spring-cloud</module>
+        <module>uwb-common</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+
+        <uwb.version>1.0.0-SNAPSHOT</uwb.version>
+        <base-common.version>1.0.0-SNAPSHOT</base-common.version>
+
+        <mybatis.spring.boot.version>1.3.0</mybatis.spring.boot.version>
+        <mybatis.tk.version>1.1.3</mybatis.tk.version>
+        <mysql.version>5.1.38</mysql.version>
+        <pageHelper.spring.boot.version>1.1.2</pageHelper.spring.boot.version>
+        <druid.spring.boot.version>1.1.0</druid.spring.boot.version>
+        <redis.version>1.4.6.RELEASE</redis.version>
+
+        <springfox-swagger2.version>2.2.2</springfox-swagger2.version>
+        <commons.lang3.version>3.7</commons.lang3.version>
+        <fastjson.version>1.2.41</fastjson.version>
+        <janino.version>3.0.7</janino.version>
+
+        <web.version>1.5.9.RELEASE</web.version>
+        <websocket.version>1.5.9.RELEASE</websocket.version>
+        <spring-cloud.version>Edgware.SR3</spring-cloud.version>
+
+        <netty.version>4.1.25.Final</netty.version>
+
+        <kafka.version>1.0.1</kafka.version>
+        <!-- spring 1.5 ,kafka-clients 1.0 spring-kakfka 1.3.2-->
+        <spring-kafka.version>1.3.2.RELEASE</spring-kafka.version>
+        <spring-integration-kafka.version>3.0.0.RELEASE</spring-integration-kafka.version>
+        <jjwt.version>0.7.0</jjwt.version>
+    </properties>
+
+
+    <!--可被子项目继承-->
+    <!-- dependencyManagement中定义的只是依赖的声明,子项目再次引入此依赖jar包时则无需显式的列出版本号-->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>${web.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

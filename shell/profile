@@ -1,0 +1,57 @@
+# /etc/profile: system-wide .profile file for the Bourne shell (sh(1))
+# and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+
+if [ "$PS1" ]; then
+  if [ "$BASH" ] && [ "$BASH" != "/bin/sh" ]; then
+    # The file bash.bashrc already sets the default PS1.
+    # PS1='\h:\w\$ '
+    if [ -f /etc/bash.bashrc ]; then
+      . /etc/bash.bashrc
+    fi
+  else
+    if [ "`id -u`" -eq 0 ]; then
+      PS1='# '
+    else
+      PS1='$ '
+    fi
+  fi
+fi
+
+# The default umask is now handled by pam_umask.
+# See pam_umask(8) and /etc/login.defs.
+
+if [ -d /etc/profile.d ]; then
+  for i in /etc/profile.d/*.sh; do
+    if [ -r $i ]; then
+      . $i
+    fi
+  done
+  unset i
+fi
+
+#wuhongliang
+#JAVA
+export JAVA_HOME=/opt/java/jdk1.8.0_172  
+export JRE_HOME=${JAVA_HOME}/jre  
+export CLASSPATH=.:${JAVA_HOME}/lib:${JRE_HOME}/lib  
+export PATH=${JAVA_HOME}/bin:$PATH
+
+#kafka
+export KAFKA_HOME=/opt/kafka/kafka_2.11
+export PATH=${KAFKA_HOME}/bin:$PATH
+
+#zookeeper
+export ZK_HOME=/opt/zookeeper-3.4.10
+export PATH=${ZK_HOME}/bin:$PATH
+
+#go
+#export GO_HOME=/opt/go
+#export PATH=${GO_HOME}/bin:$PATH
+
+#ulimit -u 10000
+ulimit -n 65535
+ulimit -d unlimited 
+ulimit -m unlimited 
+ulimit -s unlimited 
+ulimit -t unlimited 
+ulimit -v unlimited

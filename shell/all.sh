@@ -9,6 +9,7 @@
 # :set ff=unix
 set -e
 #set -u
+FDFS_HOME=/etc/init.d
 SHELL_HOME=/home/project/uwb/shell
 SCRIPT_NAME=${SHELL_HOME}/all.sh
 
@@ -20,11 +21,13 @@ d_start(){
  sleep 3s
  ${SHELL_HOME}/redis.sh start
  sleep 3s
+ ${FDFS_HOME}/fdfs_trackerd start
+ sleep 3s
+ ${FDFS_HOME}/fdfs_storaged start 
+ sleep 3s
  ${SHELL_HOME}/nginx.sh start
- #${SHELL_HOME}/fdfs_trackerd start
- #${SHELL_HOME}/fdfs_storaged start
  sleep 10s
- ${SHELL_HOME}/services.sh start 
+ ${SHELL_HOME}/uwb.sh start 
  # ${SHELL_HOME}/alrtls.sh start 
 }
 

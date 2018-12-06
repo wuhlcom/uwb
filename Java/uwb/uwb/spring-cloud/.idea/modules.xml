@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/uwb-cloud-eureka/uwb-cloud-eureka.iml" filepath="$PROJECT_DIR$/uwb-cloud-eureka/uwb-cloud-eureka.iml" />
+      <module fileurl="file://$PROJECT_DIR$/uwb-cloud-feign/uwb-cloud-feign.iml" filepath="$PROJECT_DIR$/uwb-cloud-feign/uwb-cloud-feign.iml" />
+      <module fileurl="file://$PROJECT_DIR$/uwb-cloud-gateway/uwb-cloud-gateway.iml" filepath="$PROJECT_DIR$/uwb-cloud-gateway/uwb-cloud-gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/uwb_cloud.iml" filepath="$PROJECT_DIR$/uwb_cloud.iml" />
+    </modules>
+  </component>
+</project>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.uwb.dao.PermissionDao">
+
+    <resultMap id="permissionMap" type="com.zhilutec.uwb.common.pojo.PermissionRs">
+        <id property="uid" column="uid"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="roleId" column="role_id" jdbcType="BIGINT"/>
+        <collection property="permissionList" ofType="com.zhilutec.uwb.entity.UwbPermission">
+            <result property="id" column="id" jdbcType="BIGINT"/>
+            <result property="parentId" column="parent_id" jdbcType="BIGINT"/>
+            <result property="menuName" column="menu_name" jdbcType="VARCHAR"/>
+            <result property="menuCode" column="menu_code" jdbcType="VARCHAR"/>
+        </collection>
+
+    </resultMap>
+
+    <select id="getPermissionByUser" parameterType="java.util.Map" resultMap="permissionMap">
+        select u.id as uid,u.username,ur.role_id,p.id,p.menu_name,p.menu_code,p.parent_id
+        from uwb_users u,uwb_user_role ur,uwb_role_permission rp,uwb_permissions p
+        where u.isdel=1 and p.isdel=1
+        and u.id=ur.user_id and ur.role_id=rp.role_id and rp.permission_id = p.id
+        <if test=" username!=null and username != '' ">
+            AND u.username =#{username}
+        </if>
+        <if test=" available!=null ">
+            AND u.available =#{available}
+        </if>
+    </select>
+
+</mapper>

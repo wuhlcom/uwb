@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head lang="en">
+
+    <title>MIA网关服务</title>
+
+    <!--/*/ <th:block th:include="fragments/headerinc :: head"></th:block> /*/-->
+</head>
+<body>
+<div class="container">
+    <!--/*/ <th:block th:include="fragments/header :: header"></th:block> /*/-->
+
+    <h2>路由详细信息</h2>
+        <div>
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">服务索引:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.id}">服务索引</p>
+					</div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">访问路径:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.path}">访问路径</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">目的微服务标识:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.serviceId}">目的微服务标识</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">目的微服务URL:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.url}">目的微服务URL</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">是否忽略前缀:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.stripPrefix}">是否忽略前缀</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">是否重试:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.retryable}">是否重试</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">有效性:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.enabled}">有效性</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">路由名称:</label>
+                    <div class="col-sm-10">
+                        <p class="form-control-static" th:text="${route.apiName}">路由名称</p>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+
+</body>
+</html>

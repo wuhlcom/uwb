@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.zhilutec</groupId>
+    <artifactId>spring-cloud</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <!--指定项目的spring boot的版本-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.3.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <modules>
+        <module>spring-cloud-gateway</module>
+        <module>spring-cloud-eureka</module>
+        <module>spring-cloud-base</module>
+        <module>spring-cloud-dao</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+
+        <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
+        <cloud.version>1.0.0-SNAPSHOT</cloud.version>
+        <commons.lang3.version>3.7</commons.lang3.version>
+        <fastjson.version>1.2.41</fastjson.version>
+        <janino.version>3.0.7</janino.version>
+        <jedis.version>2.9.0</jedis.version>
+        <jjwt.version>0.7.0</jjwt.version>
+        <javax.version>8.0</javax.version>
+        <mybatis.spring.boot.version>1.3.0</mybatis.spring.boot.version>
+        <mybatis.tk.version>1.1.3</mybatis.tk.version>
+        <mysql.version>5.1.38</mysql.version>
+        <pageHelper.spring.boot.version>1.1.2</pageHelper.spring.boot.version>
+        <druid.spring.boot.version>1.1.0</druid.spring.boot.version>
+        <redis.version>2.1.2.RELEASE</redis.version>
+    </properties>
+
+    <!--可被子项目继承-->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--声明spring boot依赖-->
+            <dependency>
+                <!-- Import dependency management from Spring Boot -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <!--<artifactId>spring-boot-starter-parent</artifcd actId>-->
+                <version>2.0.3.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zhilutec.uwb.dao.FileDao">
+
+    <update id="updateOne" parameterType="com.zhilutec.uwb.entity.FileEntity">
+        UPDATE uwb_files F
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null and name != ''">F.NAME=#{name},</if>
+            <if test="status!=null and status != ''">F.STATUS=#{status},</if>
+            <if test="length!=null and length != ''">F.LENGTH=#{length},</if>
+            <if test="width!=null and width != ''">F.WIDTH=#{width},</if>
+            <if test="picLength!=null and pic_length != ''">F.PIC_LENGTH=#{picLength},</if>
+            <if test="picWidth!=null and pic_width != ''">F.PIC_WIDTH=#{picWidth},</if>
+            <if test="remark!=null and remark != '' ">F.REMARK=#{remark},</if>
+        </trim>
+        WHERE id=#{id} and isdel=1
+    </update>
+
+    <update id="batchUpdateIsdel" parameterType="java.util.List">
+        UPDATE uwb_files SET isdel = 0 WHERE id IN
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <resultMap id="fileList" type="com.zhilutec.uwb.entity.FileEntity">
+        <id property="id" column="id"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="length" column="length" jdbcType="DOUBLE"/>
+        <result property="picLength" column="pic_length" jdbcType="INTEGER"/>
+        <result property="width" column="width" jdbcType="DOUBLE"/>
+        <result property="picWidth" column="pic_width" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="size" column="size" jdbcType="BIGINT"/>
+        <result property="groupName" column="group_name" jdbcType="VARCHAR"/>
+        <result property="remoteName" column="remote_name" jdbcType="VARCHAR"/>
+        <result property="remotePath" column="remote_path" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="getFiles" parameterType="com.zhilutec.uwb.entity.FileEntity" resultMap="fileList">
+        SELECT F.ID,
+        F.NAME,
+        F.STATUS,
+        F.GROUP_NAME,
+        F.LENGTH,
+        F.PIC_LENGTH,
+        F.WIDTH,
+        F.PIC_WIDTH,
+        F.REMOTE_NAME,
+        F.REMOTE_PATH,
+        F.TYPE,
+        F.SIZE,
+        F.CREATED_AT,
+        F.REMARK
+        FROM uwb_files F
+        <where>
+            1 = 1 and isdel=1
+            <if test=" id!=null ">
+                AND F.ID =#{id, jdbcType=INTEGER}
+            </if>
+            <if test="name != null and name != '' ">
+                <!--AND F.NAME LIKE '%${name}%'-->
+                AND F.NAME LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="length != null ">
+                AND F.LENGTH= #{length, jdbcType=DOUBLE}
+            </if>
+            <if test="width != null ">
+                AND F.WIDTH = #{width, jdbcType=DOUBLE}
+            </if>
+            <if test="picLength != null  ">
+                AND F.PIC_LENGTH = #{picLength, jdbcType=INTEGER}
+            </if>
+            <if test="picWidth != null ">
+                AND F.PIC_WIDTH = #{width, jdbcType=INTEGER}
+            </if>
+            <if test="status != null ">
+                AND F.STATUS = #{status, jdbcType=INTEGER}
+            </if>
+            <if test="remark != null and remark != '' ">
+                AND F.REMARK = #{remark, jdbcType=VARCHAR}
+            </if>
+            <if test="groupName != null and groupName != '' ">
+                AND F.GROUP_NAME = #{groupName, jdbcType=VARCHAR}
+            </if>
+            <if test="type != null ">
+                AND F.TYPE=#{type, jdbcType=INTEGER}
+            </if>
+
+        </where>
+        order by
+        <choose>
+            <when test="sort!=null and sort !=''">
+                ${sort}
+                <if test="order!=null and order !=''">
+                    ${order}
+                </if>
+            </when>
+            <otherwise>
+                created_at desc,status asc
+            </otherwise>
+        </choose>
+    </select>
+
+
+</mapper>

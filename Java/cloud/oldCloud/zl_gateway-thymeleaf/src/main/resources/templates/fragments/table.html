@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta http-equiv=”Content-Type” content=”text/html; charset=utf-8″>
+    <title>Task List</title>
+  </head>
+  <body>
+  <div th:if="${not #lists.isEmpty(routes)}">
+    <div th:fragment="table">
+      <h2>路由列表</h2>
+      <table class="table table-striped table-hover table-condensed table-condensed dataTables-example">
+        <thead>
+        <tr>
+          <th>服务标识</th>
+          <th>访问路径</th>
+          <th>目的微服务标识</th>
+          <th>目的微服务URL</th>
+          <th>有效性</th>
+          <th>路由名称</th>
+          <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="route : ${routes}">
+          <!--<td> <a th:href="@{/gateway/api/{routeId}(routeId=${route.id})}" th:text="${route.id}"></a></td>-->
+          <td th:text="${route.path}"></td>
+          <td th:text="${route.serviceId}"></td>
+          <td th:text="${route.url}"></td>
+          <td th:text="${route.enabled}"></td>
+          <td th:text="${route.apiName}"></td>
+          <td><a th:href="${'/gateway/api/add/' + route.id}">修改</a>
+            <a th:href="${'/gateway/api/del/' + route.id}">删除</a></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </body>
+</html>

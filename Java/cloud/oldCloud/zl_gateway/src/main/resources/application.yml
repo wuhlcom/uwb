@@ -1,0 +1,138 @@
+mysql:
+  ip: 192.168.10.232
+  port: 3306
+  username: root
+  password: root
+
+redis:
+  ip: 192.168.10.232
+  port: 6379
+  password: uwb!2018@0511_zl
+server:
+ port: 11007
+ tomcat:
+     max-threads: 16 # 最大worker线程
+     min-spare-threads: 8 # 最小worker线程
+     accept-count: 65535
+     max-connections: 8192
+     uri-encoding: UTF-8
+# undertow:
+#     io-threads: 4 # IO线程数，默认为CPU核心数，最小为2
+#     worker-threads: 32 # 阻塞任务线程池，值设置取决于系统的负载，默认为io-threads * 8
+#     buffer-size: 1024 # 每块buffer的空间大小
+#     max-http-post-size: 8192
+# servlet:
+#   context-path: /gateway
+
+spring:
+  application:
+    name: uwb-gateway
+  cloud:
+    gateway:
+      discovery:
+       locator:
+       #是否与服务发现组件进行结合
+         enabled: true
+      routes:
+#以下路由用于调试
+# Normwal Websocket route
+#      - id:uwb-websocket
+#        uri: ws://192.168.10.232:80
+#        predicates:
+#          - Path=/uwb/websocket/**
+#      - id: uwb-test
+#        uri: lb://zhilutest
+#        predicates:
+#          - Path=/uwb/test/**
+#          - Method=GET
+#        filters:
+#           - AddRequestHeader=X-Request-Foo, Bar
+#           - AddRequestParameter=foo, bar
+#           - PreserveHostHeader
+           #熔断
+#           - name: Hystrix
+#             args:
+#                name: fallbackcmd
+#                fallbackUri: forward:/fallback
+#           - RewritePath=/consumingserviceendpoint, /backingserviceendpoint
+            #熔断
+#           - Hystrix=fallback
+#hystrix.command.fallbackcmd.execution.isolation.thread.timeoutInMilliseconds: 5000
+  redis:
+    database: 6
+    host: ${redis.ip}
+    port: ${redis.port}
+    password: ${redis.password}
+    jedis:
+      pool:
+        max-active: 2000
+        max-wait: -1
+        max-idle: 50
+        min-idle: 0
+    timeout: 0
+  datasource:
+    url: jdbc:mysql://${mysql.ip}:${mysql.port}/MIA_Gw_db?useUnicode=true&characterEncoding=utf8
+    driver-class-name: com.mysql.jdbc.Driver
+    username: ${mysql.username}
+    password: ${mysql.password}
+    name: rbac
+
+eureka:
+  server:
+    ip: 192.168.10.232
+    port: 5555
+  instance:
+    #本机IP地址
+    ip-address: 192.168.10.188
+#   instance-id: ${spring.cloud.client.ip_address}:${spring.application.name}:${server.port}
+    instance-id: ${eureka.instance.ip-address}:${spring.application.name}:${server.port}
+    lease-expiration-duration-in-seconds: 30
+    lease-renewal-interval-in-seconds: 15
+    prefer-ip-address: true
+  client:
+    healthcheck:
+      enable: true
+    serviceUrl:
+      defaultZone: http://${eureka.server.ip}:${eureka.server.port}/eureka/
+
+##############################################
+#打开actuator路由监测，可用于调试
+#如果打开需要做一些actuator的安全措施
+#目前默认不打开
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+##############################################
+#        exclude: "env,beans"
+#    jmx:
+#        exposure:
+#          include: "*"
+#          exclude: ""
+mapper:
+  mappers: com.zhilutec.common.mappers.MyMapper
+  not-empty: false
+  identity: MYSQL
+mybatis:
+  mapper-locations: classpath:daos/*.xml
+  config-location: classpath:mybatis/config.xml
+  type-aliases-package: com.zhilutec.dbs.entities
+  type-handlers-package: com.zhilutec.dbs.daos
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+logging:
+  level:
+     com:
+        zhilutec:
+            dbs:
+              daos: info
+
+
+
+
+
+

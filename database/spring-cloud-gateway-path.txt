@@ -1,0 +1,124 @@
+sping应用层路由简化版本
+只有path类型且无过滤
+要网关路由有两种方式
+1 http类型的路由，路由使用域名或IP地址
+  此类路由对应的服务可以不在eureka注册也能使用gateway进行路由
+  一条路由有两个记录排列记录和路由记录，排列记录使用SortedSet，路由记录使用hash  
+resources:  
+   SortedSet
+		key     value            score
+		GWSET   uwb-resources    1539077771
+   HASH
+		key：   GATEWAY
+		field:  uwb-resources
+		value:
+				{
+				  "available": 1,
+				  "order": 0,
+				  "predicates": [
+					{
+					  "route": "/uwb/resources/**",
+					  "routeType": "Path"
+					}
+				  ],
+				  "routeId": "uwb-resources",
+				  "type": 2,
+				  "url": "http://192.168.10.232:10003",
+				  "urlType": "HTTP"
+				}
+
+  
+2 lb类型路由此类路由使用服务Id进行路由，对应的服务必须在eureka注册但服务必须在eureka注册成功
+ lb类型路由在redis中显示如下:
+ 一条路由有两个记录排列记录和路由记录，排列记录使用SortedSet，路由记录使用hash
+resources:
+   SortedSet
+		key     value            score
+		GWSET   uwb-resources    1539077771
+   HASH
+		key：   GATEWAY
+		field:  uwb-resources
+		value:
+				{
+				  "available": 1,
+				  "order": 0,
+				  "predicates": [
+					{
+					  "route": "/uwb/resources/**",
+					  "routeType": "Path"
+					}
+				  ],
+				  "routeId": "uwb-resources",
+				  "type": 2,
+				  "url": "UWB-RESOURCES",
+				  "urlType": "LB"
+				}
+
+websocket:
+   SortedSet
+		key     value            score
+		GWSET   uwb-websocket    1539077771
+   HASH
+		key：   GATEWAY
+		field:  uwb-websocket
+		value:
+				{
+				  "available": 1,
+				  "order": 0,
+				  "predicates": [
+					{
+					  "route": "/uwb/websocket/**",
+					  "routeType": "Path"
+					}
+				  ],
+				  "routeId": "uwb-websocket",
+				  "type": 2,
+				  "url": "UWB-WEBSOCKET",
+				  "urlType": "LB"
+				}
+
+producer:
+   SortedSet
+		key     value            score
+		GWSET   uwb-producer    1539077771
+   HASH
+		key：   GATEWAY
+		field:  uwb-producer
+		value:
+				{
+				  "available": 1,
+				  "order": 0,
+				  "predicates": [
+					{
+					  "route": "/uwb/producer/**",
+					  "routeType": "Path"
+					}
+				  ],
+				  "routeId": "uwb-producer",
+				  "type": 2,
+				  "url": "UWB-PRODUCER",
+				  "urlType": "LB"
+				}				
+
+fastdfs:
+   SortedSet
+		key     value            score
+		GWSET   uwb-fastdfs    1539077771
+   HASH
+		key：   GATEWAY
+		field:  uwb-fastdfs
+		value:
+				{
+				  "available": 1,
+				  "order": 0,
+				  "predicates": [
+					{
+					  "route": "/uwb/fastdfs/**",
+					  "routeType": "Path"
+					}
+				  ],
+				  "routeId": "uwb-fastdfs",
+				  "type": 2,
+				  "url": "UWB-FASTDFS",
+				  "urlType": "LB"
+				}				
