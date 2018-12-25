@@ -31,8 +31,8 @@ spring:
     gateway:
       discovery:
        locator:
-       #是否与服务发现组件进行结合
-         enabled: true
+         enabled: true   #是否与服务发现组件进行结合
+         lower-case-service-id: true #将请求路径上的服务名配置为小写
       routes:
 #以下路由用于调试
 # Normwal Websocket route

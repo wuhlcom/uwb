@@ -1,9 +1,8 @@
 spring:
   application:
     name: spring-cloud-eureka
-#  profiles:
-#    active: peer1
-
+  profiles:
+    active: peer2
 
 #        # 下面是配置undertow作为服务器的参数
 #        # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
@@ -18,8 +17,12 @@ spring:
 #        server.undertow.accesslog.enabled=true
 #        server.undertow.accesslog.dir=/zldata/mia/log/uwb/accessUndertow
 #        server.undertow.accesslog.suffix=log
+#eureka.server.enableSelfPreservation:是否向注册中心注册自己
+#通过eureka.client.registerWithEureka：false和fetchRegistry：false来表明自己是一个eureka server.
 server:
-  port: 5555
+  port: 5557
+  peer:
+    port: 5556
   undertow:
     io-threads: 2
     worker-threads: 20
@@ -27,19 +30,22 @@ server:
     direct-buffers: true
     accesslog:
       enabled: true
-      dir: /zldata/mia/log/cloud/eureka
+      dir: /zldata/mia/log/cloud/eureka2
       suffix: log
 eureka:
   instance:
-    hostname: localhost
+    hostname: peer2
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
+    prefer-ip-address: false
   client:
     serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
-    register-with-eureka: true
-    fetch-registry: true
+      defaultZone: http://peer1:${server.peer.port}/eureka/
+#      defaultZone: http://192.168.10.232:${server.peer.port}/eureka/
+    fetch-registry: true #一定要设置为true或者不写,否则会出现unavailable-replicas
+    register-with-eureka: true #一定要设置为true或者不写,否则会出现unavailable-replicas
   server:
-        enable-self-preservation: false
+        enable-self-preservation: true
+        renewal-percent-threshold: 0.45 #修改renews 和renews threshold的比值阀值可以影响self-preservation
 
 

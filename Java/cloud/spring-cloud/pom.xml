@@ -21,6 +21,9 @@
         <module>spring-cloud-eureka</module>
         <module>spring-cloud-base</module>
         <module>spring-cloud-dao</module>
+        <module>spring-cloud-hi</module>
+        <module>spring-cloud-ribbon</module>
+        <module>spring-cloud-feign</module>
     </modules>
 
     <properties>

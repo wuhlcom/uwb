@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
  * name: fallbackcmd
  * fallbackUri: forward:/incaseoffailureusethis
  * - RewritePath=/consumingserviceendpoint, /backingserviceendpoint
- * 这里通用路由是指redis中保存的路由，支持Gateway实际路由的11种路由匹配条件和23种过滤条件
+ * 这里通用路由是指redis中保存的路由，Gateway实际支持路由的11种路由匹配条件和23种过滤条件
  * 在使用时需要根据情况转换成Gateway需要的真实路由格式，目前只实现path类型真实路由转换
  */
 @Service
