@@ -24,6 +24,8 @@
         <module>spring-cloud-hi</module>
         <module>spring-cloud-ribbon</module>
         <module>spring-cloud-feign</module>
+        <module>spring-cloud-config-server</module>
+        <module>spring-cloud-config-client</module>
     </modules>
 
     <properties>
